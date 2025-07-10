@@ -827,9 +827,15 @@ def daily_summary_log_timebucket_plot(df: pd.DataFrame):
         fig.tight_layout()
 
         figs.append((week_label, fig))
-
-    # Instead of print, return total count info as well
+    
+        # Instead of print, return total count info as well
     return melted_df, figs, int(total_action_count)
+  
+    # fig_dict = {week_label: fig for week_label, fig in figs}
+    # return melted_df, fig_dict, int(total_action_count)
+
+
+
 
 def plot_weekday_timebucket_grade_distribution(df: pd.DataFrame):
     df = df.copy()

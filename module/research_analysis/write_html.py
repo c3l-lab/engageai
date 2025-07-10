@@ -71,8 +71,7 @@ def extract_figures(obj):
         return {"figure": obj}
     else:
         return {}  # or raise error/log warning
-
-
+    
 
 # import os
 # import pandas as pd
