@@ -917,7 +917,6 @@ def plot_weekday_timebucket_grade_distribution(df: pd.DataFrame):
 
     return melted, figs
 
-
 def normalize_action_with_group_info(action_df: pd.DataFrame, gradegroup_df: pd.DataFrame) -> pd.DataFrame:
 
     # Step 1: Drop missing values in count
@@ -949,7 +948,76 @@ def normalize_action_with_group_info(action_df: pd.DataFrame, gradegroup_df: pd.
 
 
 
-def plot_weekday_timebucket_grade_distribution_per_user(df: pd.DataFrame):
+# def plot_weekday_timebucket_grade_distribution_per_user(df: pd.DataFrame):
+    import seaborn as sns
+    day_order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+    bucket_order = ["Early Morning", "Morning", "Afternoon", "Evening", "Night Late"]
+    grade_order = ['hd', 'cd', 'p', 'f', 'i']
+
+    df = df.copy()
+    df = df[df['grade_group_matched'].isin(grade_order)]
+    df = df[df['weekday'].isin(day_order)]
+    df['grade_group_matched'] = pd.Categorical(df['grade_group_matched'], categories=grade_order, ordered=True)
+    df['weekday'] = pd.Categorical(df['weekday'], categories=day_order, ordered=True)
+    df['time_bucket'] = pd.Categorical(df['time_bucket'], categories=bucket_order, ordered=True)
+
+    grade_colors = sns.color_palette("Set2", len(grade_order))
+    day_colors = sns.color_palette("tab10", len(day_order))
+    day_color_map = dict(zip(day_order, day_colors))
+
+    figs = []
+    for week, week_df in df.groupby('week_label'):
+        x_labels = [f"{day} {bucket}" for day in day_order for bucket in bucket_order]
+        x = range(len(x_labels))
+        data = pd.DataFrame(0.0, index=x_labels, columns=grade_order)
+
+        for _, row in week_df.iterrows():
+            key = f"{row['weekday']} {row['time_bucket']}"
+            data.at[key, row['grade_group_matched']] += row['count_per_user']
+
+        fig, ax = plt.subplots(figsize=(18, 6))
+        bottoms = [0] * len(data)
+        for i, grade in enumerate(grade_order):
+            heights = data[grade].values
+            ax.bar(
+                x, heights,
+                bottom=bottoms,
+                color=grade_colors[i],
+                label=grade.upper(),
+                width=0.8
+            )
+            bottoms = [bottoms[j] + heights[j] for j in range(len(heights))]
+
+        for idx in x:
+            cum = 0
+            for grade in grade_order:
+                h = data.iloc[idx][grade]
+                if h > 0:
+                    ax.text(
+                        idx, cum + h / 2, f"{h:.1f}",
+                        ha='center', va='center',
+                        fontsize=8, color='white'
+                    )
+                    cum += h
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(x_labels, rotation=45, ha='right')
+        for label in ax.get_xticklabels():
+            day = label.get_text().split(' ')[0]
+            label.set_color(day_color_map.get(day, 'black'))
+
+        ax.set_xlabel('Day and Time Bucket')
+        ax.set_ylabel('Actions per User')
+        ax.set_title(f"Week {week} – Login Distribution per User by Grade and Time Bucket")
+        ax.legend(title='Grade Group', bbox_to_anchor=(1.01, 1), loc='upper left')
+        ax.grid(axis='y', linestyle='--', alpha=0.6)
+        fig.tight_layout()
+
+        figs.append((f"week_{week}", fig))  # ✅ Tuple of (name, fig)
+
+    return df, figs
+
+# def plot_weekday_timebucket_grade_distribution_per_user(df: pd.DataFrame):
     day_order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
     bucket_order = ["Early Morning", "Morning", "Afternoon", "Evening", "Night Late"]
     grade_order = ['hd', 'cd', 'p', 'f', 'i']
@@ -1017,3 +1085,71 @@ def plot_weekday_timebucket_grade_distribution_per_user(df: pd.DataFrame):
 
     return df, figs
 
+def plot_weekday_timebucket_grade_distribution_per_user(df: pd.DataFrame):
+    import seaborn as sns
+    day_order = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
+    bucket_order = ["Early Morning", "Morning", "Afternoon", "Evening", "Night Late"]
+    grade_order = ['hd', 'cd', 'p', 'f', 'i']
+
+    df = df.copy()
+    df = df[df['grade_group_matched'].isin(grade_order)]
+    df = df[df['weekday'].isin(day_order)]
+    df['grade_group_matched'] = pd.Categorical(df['grade_group_matched'], categories=grade_order, ordered=True)
+    df['weekday'] = pd.Categorical(df['weekday'], categories=day_order, ordered=True)
+    df['time_bucket'] = pd.Categorical(df['time_bucket'], categories=bucket_order, ordered=True)
+
+    grade_colors = sns.color_palette("Set2", len(grade_order))
+    day_colors = sns.color_palette("tab10", len(day_order))
+    day_color_map = dict(zip(day_order, day_colors))
+
+    figs = []
+    for week, week_df in df.groupby('week_label'):
+        x_labels = [f"{day} {bucket}" for day in day_order for bucket in bucket_order]
+        x = range(len(x_labels))
+        data = pd.DataFrame(0.0, index=x_labels, columns=grade_order)
+
+        for _, row in week_df.iterrows():
+            key = f"{row['weekday']} {row['time_bucket']}"
+            data.at[key, row['grade_group_matched']] += row['count_per_user']
+
+        fig, ax = plt.subplots(figsize=(18, 6))
+        bottoms = [0] * len(data)
+        for i, grade in enumerate(grade_order):
+            heights = data[grade].values
+            ax.bar(
+                x, heights,
+                bottom=bottoms,
+                color=grade_colors[i],
+                label=grade.upper(),
+                width=0.8
+            )
+            bottoms = [bottoms[j] + heights[j] for j in range(len(heights))]
+
+        for idx in x:
+            cum = 0
+            for grade in grade_order:
+                h = data.iloc[idx][grade]
+                if h > 0:
+                    ax.text(
+                        idx, cum + h / 2, f"{h:.1f}",
+                        ha='center', va='center',
+                        fontsize=8, color='white'
+                    )
+                    cum += h
+
+        ax.set_xticks(x)
+        ax.set_xticklabels(x_labels, rotation=45, ha='right')
+        for label in ax.get_xticklabels():
+            day = label.get_text().split(' ')[0]
+            label.set_color(day_color_map.get(day, 'black'))
+
+        ax.set_xlabel('Day and Time Bucket')
+        ax.set_ylabel('Actions per User')
+        ax.set_title(f"Week {week} – Login Distribution per User by Grade and Time Bucket")
+        ax.legend(title='Grade Group', bbox_to_anchor=(1.01, 1), loc='upper left')
+        ax.grid(axis='y', linestyle='--', alpha=0.6)
+        fig.tight_layout()
+
+        figs.append((f"week_{week}", fig))  # ✅ Tuple of (name, fig)
+
+    return df, figs
