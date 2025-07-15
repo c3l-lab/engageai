@@ -1,0 +1,43 @@
+# Byte-compiled / cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Environment variables & secrets (if any)
+.env
+*.env
+
+# MacOS system files
+.DS_Store
+
+# VS Code settings (optional)
+.vscode/
+
+# Python virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Logs
+*.log
+
+# Test output
+htmlcov/
+.coverage
+
+# Ignore datasets and temp output (customize as needed)
+data_output/
+*.csv
+*.xlsx
+
+# Ignore compiled notebooks (optional)
+*.nbconvert.ipynb
+
+# Ignore SageMaker local run artifacts (optional)
+**/output/

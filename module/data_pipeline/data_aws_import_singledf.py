@@ -29,8 +29,6 @@ if __name__ == "__main__":
     print(df_alllog.head())
 
 
-s3_utils.py
-
 # import boto3
 # import pandas as pd
 # from io import StringIO
