@@ -76,7 +76,6 @@ data = [
 # Convert to DataFrame
 assign_mapping_df = pd.DataFrame(data)
 
-
 ##################
 
 
@@ -127,7 +126,7 @@ import pandas as pd
 
 def calculate_time_and_score_modified(df, T_max:int, T_late:int):
     df = df.copy()
-    
+
     # Convert to datetime
     df['first_view_time'] = pd.to_datetime(df['first_view_time'])
     df['Readable_Time_assign_date'] = pd.to_datetime(df['Readable_Time_assign_date'])
