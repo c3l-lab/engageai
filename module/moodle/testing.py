@@ -49,7 +49,7 @@ params = {
     "wstoken": TOKEN,
     "wsfunction": FUNCTION,
     "moodlewsrestformat": "json",
-    "criteria[0][key]": "d",   # or "email", "username", etc.
+    "criteria[0][key]": "email",   # or "email", "username", etc.
     "criteria[0][value]": SEARCH_QUERY,
 }
 
