@@ -33,11 +33,11 @@ def send_message_to_user(moodle_url, token, to_user_id, message_text):
         print(f"❌ Error: {response.status_code} - {response.text}")
 
 
-# Example usage:
-MOODLE_URL = "https://moodle.c3l.ai"
-TOKEN = "e2b64938f15b80d29e8845d4b54301e1"
-user_id = 438
-print(f"Sending to user ID: {user_id}")
-send_message_to_user(MOODLE_URL, TOKEN, user_id, "Hello from fixed Moodle API script!")
+# # Example usage:
+# MOODLE_URL = "https://moodle.c3l.ai"
+# TOKEN = "e2b64938f15b80d29e8845d4b54301e1"
+# user_id = 438
+# print(f"Sending to user ID: {user_id}")
+# send_message_to_user(MOODLE_URL, TOKEN, user_id, "Hello from fixed Moodle API script!")
 
 

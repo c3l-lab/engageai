@@ -22,12 +22,12 @@ def get_enrolled_users(moodle_url, token, course_id):
         print(f"Error: {response.status_code} - {response.text}")
         return []
 
-# Example usage
-MOODLE_URL = "https://moodle.c3l.ai"
-TOKEN = "e2b64938f15b80d29e8845d4b54301e1"
-COURSE_ID = 2
+# # Example usage
+# MOODLE_URL = "https://moodle.c3l.ai"
+# TOKEN = "e2b64938f15b80d29e8845d4b54301e1"
+# COURSE_ID = 2
 
-enrolled_users = get_enrolled_users(MOODLE_URL, TOKEN, COURSE_ID)
+# enrolled_users = get_enrolled_users(MOODLE_URL, TOKEN, COURSE_ID)
 
-for user in enrolled_users:
-    print(f"ID: {user['id']}, Name: {user['fullname']}, Email: {user.get('email', 'N/A')}")
+# for user in enrolled_users:
+#     print(f"ID: {user['id']}, Name: {user['fullname']}, Email: {user.get('email', 'N/A')}")

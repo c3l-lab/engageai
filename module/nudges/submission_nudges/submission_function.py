@@ -93,6 +93,33 @@ def moodle_sum_early_late_counts(df):
 
 
 
+############################################# Moodle API submission pre reminder function  ######################################################################################## 
+
+
+from datetime import datetime, timedelta
+
+def process_duedate_reminder(assignments_dict, days_before_due=14):
+    updated = {}
+
+    for course_name, assignments in assignments_dict.items():
+        updated[course_name] = []
+
+        for assign in assignments:
+            due_date_str = assign.get("due_date")
+            if due_date_str:
+                # Convert to datetime
+                due_date = datetime.strptime(due_date_str, '%Y-%m-%d %H:%M:%S')
+                # Calculate pre-reminder date
+                pre_reminder_date = due_date - timedelta(days=days_before_due)
+                # Format back to string
+                pre_reminder_str = pre_reminder_date.strftime('%Y-%m-%d %H:%M:%S')
+                # Add new key
+                assign["pre_reminder_date"] = pre_reminder_str
+
+            updated[course_name].append(assign)
+
+    return updated
+
 ############################################# Reserach Analysis from Azure Download Data ######################################################################################## 
 
 import pandas as pd
