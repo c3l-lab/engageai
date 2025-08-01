@@ -25,7 +25,7 @@ class Pipeline(Stack):
         super().__init__(scope, id, **kwargs)
 
         # S3 bucket to store the CodePipeline build artifacts
-        artifact_bucket_name = resource_name("agent-pipeline-artifacts", branch)
+        artifact_bucket_name = resource_name("pipeline", branch)
         artifact_bucket = aws_s3.Bucket(
             self,
             artifact_bucket_name,

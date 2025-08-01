@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "c3l-agent-orchestration"
+name = "c3l-engageai"
 version = "0.1.0"
 description = ""
 authors = ["haiyue <haiyue.wang@unisa.edu.au>"]
