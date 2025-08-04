@@ -14,20 +14,20 @@ import subprocess
 from c3l_engageai.config import Environment, config
 from c3l_engageai.helpers import resource_name, resolve_secret
 
-def lambda_chainlit(
+def create_lambda_athena_query(
     scope: Construct,
     branch: Environment,
     role: aws_iam.IRole,
 ) -> aws_lambda.IFunction:
 
-    lambda_name = resource_name("lambda-chainlit", branch)
+    lambda_name = resource_name("lambda-athena-query", branch)
     lambda_function = lambda_python.PythonFunction(
         scope, 
         lambda_name,
         function_name=lambda_name,
         entry="../modules/",  # Directory containing your lambda code and pyproject.toml
-        index="lambdas/lambda_c3l_agent_orchestrator_web/lambda_c3l_agent_orchestrator_web/index.py",  # Your lambda handler file
-        handler="handler",  # Function name in main.py
+        index="athena_query/index.py",  # Your lambda handler file
+        handler="lambda_handler",  # Function name in main.py
         runtime=aws_lambda.Runtime.PYTHON_3_11,
         timeout=Duration.seconds(300),
         memory_size=512,

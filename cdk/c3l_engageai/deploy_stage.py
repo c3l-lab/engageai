@@ -6,6 +6,7 @@ from c3l_engageai.config import Environment, config
 from c3l_engageai.helpers import resource_name
 
 from c3l_engageai.stacks.secrets import Secrets
+from c3l_engageai.stacks.datapipeline import Datapipeline
 
 class DeployStage(aws_cdk.Stage):
     def __init__(
@@ -30,3 +31,11 @@ class DeployStage(aws_cdk.Stage):
             stack_name=secrets_stack_name,
             env=env,
         )
+
+
+        datapipeline_stack = Datapipeline(
+            self, 
+            resource_name("datapipeline-stack", branch), 
+            branch=branch, 
+            env=env)
+        datapipeline_stack.add_dependency(secrets_stack)
