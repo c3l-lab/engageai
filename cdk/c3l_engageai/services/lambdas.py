@@ -44,9 +44,6 @@ def create_lambda_athena_query(
                 find . -type f -name "*.py" -exec cp --parents {} /asset-output/athena_query/ \; && \
                 echo "before install package" && \
                 ls /asset-output && \
-                pwd && \
-                ls . && \
-                cd athena_query/ && \
                 poetry export -f requirements.txt --without-hashes --only main > /asset-output/requirements.txt &&\
                 cd /asset-output && \
                 pip install -r requirements.txt -t . && \
