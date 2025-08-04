@@ -7,6 +7,8 @@ from c3l_engageai.helpers import resource_name
 def create_lambda_default_execution_role(
     scope: Construct, branch: Environment, stack_name: str
 ) -> aws_iam.Role:
+    role_name = resource_name(stack_name + "-lambda-default-execution-role", branch)
+    print(f"role_name: {role_name}")
     lambda_default_execution_role = aws_iam.Role(
         scope,
         "LambdaDefaultExecutionRole",
@@ -20,7 +22,7 @@ def create_lambda_default_execution_role(
             # ),
         ],
         description=("Lambda Role to access basic execution permissions"),
-        role_name=resource_name(stack_name + "-lambda-default-execution-role", branch),
+        role_name=role_name,
     )
 
     lambda_default_execution_role.add_to_policy(
