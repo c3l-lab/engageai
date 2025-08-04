@@ -87,16 +87,19 @@ credentials = {
 # Step 2: Create AthenaQueryRunner instance
 runner = AthenaQueryRunner(credentials)
 
-# Step 3: Define your query, database, and S3 output
-database = 'engage-ai-dataset'
-sql_query = '''
-SELECT DISTINCT term_code, moodle_course_id, id, iteminstance, duedate, name
-FROM "engage-ai-dataset"."every_termcode_assign_module_duedate"
-LIMIT 100
-'''
-s3_output = 's3://engage-ai-dataset/athena-result/csv_to_needcol/format_csv_assign_duedate/'
 
-
-
-# Step 4: Run the query
-result_url = runner.run_query(database, sql_query, s3_output)
+def data_transformation(**kwargs):
+    # Step 3: Define your query, database, and S3 output
+    database = 'engage-ai-dataset'
+    sql_query = '''
+    SELECT DISTINCT term_code, moodle_course_id, id, iteminstance, duedate, name
+    FROM "engage-ai-dataset"."every_termcode_assign_module_duedate"
+    LIMIT 100
+    '''
+    s3_output = 's3://engage-ai-dataset/athena-result/csv_to_needcol/format_csv_assign_duedate/'
+    
+    
+    
+    # Step 4: Run the query
+    result_url = runner.run_query(database, sql_query, s3_output)
+    return result_url
