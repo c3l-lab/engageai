@@ -32,6 +32,8 @@ def create_shared_lambda_layer(
                     pip install --no-cache-dir poetry && \
                     pip install poetry-plugin-export && \
                     poetry --version && \
+                    "pwd" && \
+                    "ls ." && \
                     mkdir -p /asset-output/python && \
                     cd lambdas && \
                     poetry export --only dev -f requirements.txt --without-hashes --only main > /asset-output/requirements.txt && \
@@ -66,7 +68,7 @@ def create_lambda_athena_query(
         lambda_name,
         function_name=lambda_name,
         entry="../modules/",  # Directory containing your lambda code and pyproject.toml
-        index="athena_query/index.py",  # Your lambda handler file
+        index="lambdas/athena_query/index.py",  # Your lambda handler file
         handler="lambda_handler",  # Function name in main.py
         runtime=aws_lambda.Runtime.PYTHON_3_11,
         timeout=Duration.seconds(300),
@@ -80,7 +82,7 @@ def create_lambda_athena_query(
                 export HOME="/tmp" && \
                 pip install --no-cache-dir poetry && \
                 poetry config virtualenvs.create true --local && \
-                cd athena_query && mkdir /asset-output/athena_query && \
+                cd lambdas/athena_query && mkdir /asset-output/athena_query && \
                 find . -type f -name "*.py" -exec cp --parents {} /asset-output/athena_query/ \; && \
                 echo "before install package" && \
                 ls /asset-output && \
