@@ -40,14 +40,15 @@ def create_lambda_athena_query(
                 export HOME="/tmp" && \
                 pip install --no-cache-dir poetry && \
                 poetry config virtualenvs.create true --local && \
-                cd lambdas && mkdir /asset-output/lambdas && \
-                find . -type f -name "*.py" -exec cp --parents {} /asset-output/lambdas/ \; && \
+                cd athena_query && mkdir /asset-output/athena_query && \
+                find . -type f -name "*.py" -exec cp --parents {} /asset-output/athena_query/ \; && \
                 echo "before install package" && \
                 ls /asset-output && \
-                cd lambda_c3l_agent_orchestrator_web/ && \
+                cd athena_query/ && \
                 poetry export -f requirements.txt --without-hashes --only main > /asset-output/requirements.txt &&\
                 cd /asset-output && \
                 pip install -r requirements.txt -t . && \
+                echo requirements.txt && \
                 echo "after install" && \
                 ls -lh .
                 """
