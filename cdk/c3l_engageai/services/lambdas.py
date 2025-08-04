@@ -44,6 +44,8 @@ def create_lambda_athena_query(
                 find . -type f -name "*.py" -exec cp --parents {} /asset-output/athena_query/ \; && \
                 echo "before install package" && \
                 ls /asset-output && \
+                pwd && \
+                ls . && \
                 cd athena_query/ && \
                 poetry export -f requirements.txt --without-hashes --only main > /asset-output/requirements.txt &&\
                 cd /asset-output && \
@@ -68,24 +70,6 @@ def create_lambda_athena_query(
             #    """
             #]
         )
-    )
-    sagemaker_endpoint_name = resource_name("sm-endpoint-dev", branch)
-    lambda_function.add_environment("ENDPOINT_NAME", sagemaker_endpoint_name)
-    
-    for environment_variable in [
-        "LANGFUSE_PUBLIC_KEY",
-        "LANGFUSE_SECRET_KEY",
-        "LANGFUSE_HOST",
-        "OPENAI_API_KEY"
-    ]:
-        lambda_function.add_environment(
-            key=environment_variable,
-            value=resolve_secret(environment_variable, branch),
-        )
-    
-    lambda_function.add_environment(
-        key="CHAINLIT_APP_ROOT",
-        value="/tmp",
     )
     
     # Explicitly cast to IFunction
