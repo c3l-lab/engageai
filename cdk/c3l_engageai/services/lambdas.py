@@ -32,8 +32,8 @@ def create_shared_lambda_layer(
                     pip install --no-cache-dir poetry && \
                     pip install poetry-plugin-export && \
                     poetry --version && \
-                    "pwd" && \
-                    "ls ." && \
+                    pwd && \
+                    ls ./ && \
                     mkdir -p /asset-output/python && \
                     cd lambdas && \
                     poetry export --only dev -f requirements.txt --without-hashes --only main > /asset-output/requirements.txt && \
