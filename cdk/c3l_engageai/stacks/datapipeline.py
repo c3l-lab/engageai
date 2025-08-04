@@ -4,7 +4,10 @@ from constructs import Construct
 from c3l_engageai.config import Environment
 from c3l_engageai.services.secretsmanager import create_secrets
 from c3l_engageai.services.iam import create_lambda_default_execution_role
-from c3l_engageai.services.lambdas import create_lambda_athena_query
+from c3l_engageai.services.lambdas import (
+    create_shared_lambda_layer,
+    create_lambda_athena_query
+)
 
 
 class Datapipeline(Stack):
@@ -21,10 +24,11 @@ class Datapipeline(Stack):
         lambda_execute_role = create_lambda_default_execution_role(
             self, branch, construct_id
         )
-
+        lambda_layer = create_shared_lambda_layer(self)
         create_lambda_athena_query(
             self,
             branch=branch,
             role=lambda_execute_role,
+            lambda_layer=[lambda_layer]
         )
         
