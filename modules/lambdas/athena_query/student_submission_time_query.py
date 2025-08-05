@@ -40,7 +40,7 @@ def student_data_transformation(**kwargs):
     sql_query = '''
     SELECT DISTINCT * FROM "engage-ai-dataset"."term_course_alllog"
     WHERE action ='submit for grading'
-    AND course= 3547
+    AND course= 4177
     '''
 
     s3_output = 's3://engage-ai-dataset/athena-result/csv_to_needcol/format_csv_student_sub/'

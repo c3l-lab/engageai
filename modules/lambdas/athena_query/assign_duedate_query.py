@@ -39,7 +39,7 @@ credentials = {
 #     return result_url
 
 
-def data_transformation(**kwargs):
+def   data_transformation(**kwargs):
     # Step 1: Set query details
     database = 'engage-ai-dataset'
     sql_query = '''
