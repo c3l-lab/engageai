@@ -19,7 +19,7 @@ def create_shared_lambda_layer(
         scope: Construct,
         entry_path: str = "../modules/",
     ) -> aws_lambda.ILayerVersion:
-    lambda_name: str = "lambdas",
+    lambda_name: str = "lambdas"
     lambda_layer_name = f"{lambda_name}_layer"
     # Create Lambda Layer from Poetry dependencies
     layer_version = aws_lambda.LayerVersion(scope, lambda_layer_name,
