@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "engageai"
+version = "1.8.3"
+description = "engage ai project poetry"
+authors = ["Paggie <paggie70424@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pandas = "^2.3.1"
+matplotlib = "^3.10.3"
+awswrangler = "^3.12.1"
+boto3 = "^1.39.3"
+ipykernel = "^6.29.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
