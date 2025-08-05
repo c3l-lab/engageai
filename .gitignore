@@ -13,7 +13,9 @@ notebooks/.ipynb_checkpoints/
 
 # Environment variables & secrets (if any)
 .env
-*.env
+*
+
+
 
 # MacOS system files
 .DS_Store

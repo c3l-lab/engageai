@@ -52,25 +52,22 @@ def create_shared_lambda_layer(
     return cast(aws_lambda.ILayerVersion, layer_version)
 
 
-def create_lambda_athena_query(
+def __create_lambda_with_bundling__(
     scope: Construct,
-    branch: Environment,
     role: aws_iam.IRole,
-    **kwargs: Dict[str, Any]
-) -> aws_lambda.IFunction:
-    lambda_layers = []
-    if kwargs.__contains__("lambda_layer"):
-        lambda_layers = kwargs["lambda_layer"]
-    lambda_folder = "athena_query"   # The lambda folder located in the lambdas directory
-    handler_file = f"{lambda_folder}/index.py" # The lambda handler file (lambda handler function need to be located in the file)
-    lambda_name = resource_name("lambda-athena-query", branch)
+    lambda_folder: str,
+    lambda_handler_file: str,
+    lambda_handler: str,
+    lambda_name: str,
+    lambda_layers: List[aws_lambda.ILayerVersion]
+) -> lambda_python.PythonFunction:
     lambda_function = lambda_python.PythonFunction(
         scope, 
         lambda_name,
         function_name=lambda_name,
         entry="../modules/",  # Directory containing your lambda code and pyproject.toml
-        index=f"lambdas/{handler_file}",  # Your lambda handler file
-        handler="lambda_handler",  # Function name in main.py
+        index=f"lambdas/{lambda_handler_file}",  # Your lambda handler file
+        handler=lambda_handler,  # Function name in main.py
         runtime=aws_lambda.Runtime.PYTHON_3_11,
         timeout=Duration.seconds(300),
         memory_size=512,
@@ -97,6 +94,31 @@ def create_lambda_athena_query(
             ]
         ),
         layers=lambda_layers,
+    )
+    return lambda_function
+
+
+def create_lambda_athena_query(
+    scope: Construct,
+    branch: Environment,
+    role: aws_iam.IRole,
+    **kwargs: Dict[str, Any]
+) -> aws_lambda.IFunction:
+    lambda_layers = []
+    if kwargs.__contains__("lambda_layer"):
+        lambda_layers = kwargs["lambda_layer"]
+    lambda_folder = "athena_query"   # The lambda folder located in the lambdas directory
+    lambda_handler_file = f"{lambda_folder}/index.py" # The lambda handler file (lambda handler function need to be located in the file)
+    lambda_handler = "lambda_handler"
+    lambda_name = resource_name("lambda-athena-query", branch)
+    lambda_function = __create_lambda_with_bundling__(
+        scope,
+        role,
+        lambda_folder,
+        lambda_handler_file,
+        lambda_handler,
+        lambda_name,
+        lambda_layers
     )
     # Explicitly cast to IFunction
     base_function = cast(aws_lambda.IFunction, lambda_function)
