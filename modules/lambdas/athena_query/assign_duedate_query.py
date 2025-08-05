@@ -19,7 +19,7 @@ credentials = {
 }
 
 # Step 2: Create AthenaQueryRunner instance
-runner = AthenaQueryRunner(credentials)
+# runner = AthenaQueryRunner(credentials)
 
 
 # def data_transformation(**kwargs):
@@ -49,6 +49,7 @@ def data_transformation(**kwargs):
     '''
     s3_output = 's3://engage-ai-dataset/athena-result/csv_to_needcol/format_csv_assign_duedate/'
 
+    runner = AthenaQueryRunner(credentials)
     # Step 2: Run Athena query
     result_s3_path = runner.run_query(database, sql_query, s3_output)
 
@@ -68,4 +69,5 @@ def data_transformation(**kwargs):
         raise ValueError("Invalid S3 path returned by runner.run_query")
 
 
-data_transformation()
+# assign_duedate_df=data_transformation()
+# print(assign_duedate_df)
