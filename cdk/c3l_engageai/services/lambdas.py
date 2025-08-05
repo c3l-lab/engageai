@@ -61,14 +61,15 @@ def create_lambda_athena_query(
     lambda_layers = []
     if kwargs.__contains__("lambda_layer"):
         lambda_layers = kwargs["lambda_layer"]
-
+    lambda_folder = "athena_query"   # The lambda folder located in the lambdas directory
+    handler_file = f"{lambda_folder}/index.py" # The lambda handler file (lambda handler function need to be located in the file)
     lambda_name = resource_name("lambda-athena-query", branch)
     lambda_function = lambda_python.PythonFunction(
         scope, 
         lambda_name,
         function_name=lambda_name,
         entry="../modules/",  # Directory containing your lambda code and pyproject.toml
-        index="lambdas/athena_query/index.py",  # Your lambda handler file
+        index=f"lambdas/{handler_file}",  # Your lambda handler file
         handler="lambda_handler",  # Function name in main.py
         runtime=aws_lambda.Runtime.PYTHON_3_11,
         timeout=Duration.seconds(300),
@@ -78,12 +79,12 @@ def create_lambda_athena_query(
         bundling=lambda_python.BundlingOptions(
             command=[
                 "bash", "-c",
-                """
+                f"""
                 export HOME="/tmp" && \
                 pip install --no-cache-dir poetry && \
                 poetry config virtualenvs.create true --local && \
-                cd lambdas/athena_query && mkdir /asset-output/athena_query && \
-                find . -type f -name "*.py" -exec cp --parents {} /asset-output/athena_query/ \; && \
+                cd lambdas/{lambda_folder} && mkdir /asset-output/{lambda_folder} && \
+                find . -type f -name "*.py" -exec cp --parents {"{}"} /asset-output/{lambda_folder}/ \; && \
                 echo "before install package" && \
                 ls /asset-output && \
                 poetry export -f requirements.txt --without-hashes --without dev --only main > /asset-output/requirements.txt &&\
