@@ -35,6 +35,16 @@ def main():
         runner.upload_dataframe_to_s3(pipeline_df, s3_key)
         print("✅ Pipeline execution and upload completed.")
 
-# Step 6: Entry point
-if __name__ == "__main__":
-    main()
+
+def lambda_handler(event, context):
+    try:
+        main()
+        return {
+            'statusCode': 200,
+            'body': 'Lambda executed successfully.'
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': f"Error: {str(e)}"
+        }
