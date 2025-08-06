@@ -2,6 +2,8 @@ import boto3
 import time
 import os
 from dotenv import load_dotenv
+import tempfile
+import pandas as pd
 
 class AthenaQueryRunner:
     def __init__(self, aws_credentials: dict, region: str = 'ap-southeast-2'):
@@ -12,6 +14,14 @@ class AthenaQueryRunner:
 
         self.athena = boto3.client(
             'athena',
+            region_name=self.region,
+            aws_access_key_id=self.aws_access_key_id,
+            aws_secret_access_key=self.aws_secret_access_key,
+            aws_session_token=self.aws_session_token
+        )
+        
+        self.s3 = boto3.client(
+            's3',
             region_name=self.region,
             aws_access_key_id=self.aws_access_key_id,
             aws_secret_access_key=self.aws_secret_access_key,
@@ -46,3 +56,26 @@ class AthenaQueryRunner:
         else:
             print(f"❌ Query failed or cancelled. Status: {state}")
             return None
+        
+    def upload_to_s3(self, local_file_path: str, s3_key: str, bucket_name: str = 'engage-ai-dataset'):
+
+        try:
+            self.s3.upload_file(local_file_path, bucket_name, s3_key)
+            print(f"✅ Uploaded '{local_file_path}' to s3://{bucket_name}/{s3_key}")
+        except Exception as e:
+            print(f"❌ Failed to upload to S3: {e}")
+            raise
+
+    
+    def upload_dataframe_to_s3(self, df: pd.DataFrame, s3_key: str, bucket_name: str = 'engage-ai-dataset'):
+
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as tmp_file:
+            temp_path = tmp_file.name
+            df.to_csv(temp_path, index=False)
+            print(f"📝 DataFrame saved to temporary file: {temp_path}")
+
+        try:
+            self.upload_to_s3(temp_path, s3_key, bucket_name)
+        finally:
+            os.remove(temp_path)
+            print(f"🧹 Temp file deleted: {temp_path}")

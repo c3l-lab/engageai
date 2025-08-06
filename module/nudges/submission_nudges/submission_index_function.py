@@ -18,36 +18,36 @@ from threshold.all_threshold import return_userid_sub_threshold
 
 ################## generate_submission_index_trigger_users ########################################################
 
-# def generate_submission_index_trigger_users(token, course_id, moodle_url, assignment_id):
-#     # Get assignments
-#     assignments = get_moodle_assignments(course_id, token)
+def generate_submission_index_trigger_users(token, course_id, moodle_url, assignment_id):
+    # Get assignments
+    assignments = get_moodle_assignments(course_id, token)
 
-#     # Filter assignment by ID
-#     assignment_info = [
-#         assignment for assignment in assignments.get("Testing_EngageAI", [])
-#         if assignment.get("assignment_id") == assignment_id
-#     ]
+    # Filter assignment by ID
+    assignment_info = [
+        assignment for assignment in assignments.get("Testing_EngageAI", [])
+        if assignment.get("assignment_id") == assignment_id
+    ]
 
-#     # Convert to DataFrame
-#     df_assign_duedate = pd.DataFrame(assignment_info)
+    # Convert to DataFrame
+    df_assign_duedate = pd.DataFrame(assignment_info)
 
-#     # Get submissions
-#     df_submissions = get_assignment_submissions(moodle_url, token, assignment_id)
+    # Get submissions
+    df_submissions = get_assignment_submissions(moodle_url, token, assignment_id)
 
-#     # Attach due date info
-#     df_assign_due_sub = moodle_attach_assign_duedate(df_assign_duedate, df_submissions)
+    # Attach due date info
+    df_assign_due_sub = moodle_attach_assign_duedate(df_assign_duedate, df_submissions)
 
-#     # Calculate time and score
-#     moodle_sub_score = moodle_calculate_time_and_score(df_assign_due_sub, T_max=14, T_late=-2)
+    # Calculate time and score
+    moodle_sub_score = moodle_calculate_time_and_score(df_assign_due_sub, T_max=14, T_late=-2)
 
-#     # Summary of early/late
-#     df_summary_early_late = moodle_sum_early_late_counts(moodle_sub_score)
+    # Summary of early/late
+    df_summary_early_late = moodle_sum_early_late_counts(moodle_sub_score)
 
-#     # Get users below threshold
-#     tigger_sub_userid = return_userid_sub_threshold(moodle_sub_score, sub_threshold=0.02)
+    # Get users below threshold
+    tigger_sub_userid = return_userid_sub_threshold(moodle_sub_score, sub_threshold=0.02)
 
-#     # ✅ Return user IDs and assignment/course info
-#     return tigger_sub_userid, course_id, assignment_id
+    # ✅ Return user IDs and assignment/course info
+    return tigger_sub_userid, course_id, assignment_id
 
 
 ################## submission reminder whole preocess  ########################################################
