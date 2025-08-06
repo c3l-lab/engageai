@@ -36,7 +36,7 @@ def create_shared_lambda_layer(
                     ls ./ && \
                     mkdir -p /asset-output/python && \
                     cd lambdas && \
-                    poetry export --only dev -f requirements.txt --without-hashes --only main > /asset-output/requirements.txt && \
+                    poetry export --only dev -f requirements.txt --without-hashes > /asset-output/requirements.txt && \
                     cd /asset-output && \
                     pip install -r requirements.txt -t /asset-output/python
                     # """
