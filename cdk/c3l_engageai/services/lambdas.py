@@ -36,7 +36,7 @@ def create_shared_lambda_layer(
                     ls ./ && \
                     mkdir -p /asset-output/python && \
                     cd lambdas && \
-                    poetry export --only dev -f requirements.txt --without-hashes --only main > /asset-output/requirements.txt && \
+                    poetry export --only dev -f requirements.txt --without-hashes > /asset-output/requirements.txt && \
                     cd /asset-output && \
                     pip install -r requirements.txt -t /asset-output/python
                     # """
@@ -65,8 +65,8 @@ def __create_lambda_with_bundling__(
         scope, 
         lambda_name,
         function_name=lambda_name,
-        entry="../modules/",  # Directory containing your lambda code and pyproject.toml
-        index=f"lambdas/{lambda_handler_file}",  # Your lambda handler file
+        entry="../modules/lambdas/",  # Directory containing your lambda code and pyproject.toml
+        index=f"{lambda_handler_file}",  # Your lambda handler file
         handler=lambda_handler,  # Function name in main.py
         runtime=aws_lambda.Runtime.PYTHON_3_11,
         timeout=Duration.seconds(300),
@@ -80,7 +80,7 @@ def __create_lambda_with_bundling__(
                 export HOME="/tmp" && \
                 pip install --no-cache-dir poetry && \
                 poetry config virtualenvs.create true --local && \
-                cd lambdas/{lambda_folder} && mkdir /asset-output/{lambda_folder} && \
+                cd {lambda_folder} && mkdir /asset-output/{lambda_folder} && \
                 find . -type f -name "*.py" -exec cp --parents {"{}"} /asset-output/{lambda_folder}/ \; && \
                 echo "before install package" && \
                 ls /asset-output && \
