@@ -14,8 +14,8 @@ import json
 
 def create_datazone_kms(scope: Construct, construct_id: str) -> kms.Key:
     # Create KMS key for encryption
-    return  = kms.Key(
-        self, construct_id,
+    return  kms.Key(
+        scope, construct_id,
         description="KMS key for DataZone encryption",
         enable_key_rotation=True,
         removal_policy=RemovalPolicy.DESTROY
