@@ -32,7 +32,6 @@ class DeployStage(aws_cdk.Stage):
             env=env,
         )
 
-
         datapipeline_stack = Datapipeline(
             self, 
             resource_name("datapipeline-stack", branch), 

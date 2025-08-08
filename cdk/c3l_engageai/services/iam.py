@@ -89,3 +89,21 @@ def create_lambda_role(
             )
         ]
     )
+
+def create_datazone_execution_role(
+    scope: Construct, branch: Environment, stack_name: str
+) -> aws_iam.Role:
+    return aws_iam.Role(
+        scope, "DataZoneExecutionRole",
+        assumed_by=aws_iam.ServicePrincipal("datazone.amazonaws.com"),
+           managed_policies=[
+            # S3 Access
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSGlueConsoleFullAccess"),
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSGlueServiceRole"),
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonAthenaFullAccess"),
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonDataZoneFullAccess"),
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSLakeFormationDataAdmin")
+        ]
+    )
+

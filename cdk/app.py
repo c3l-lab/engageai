@@ -4,7 +4,6 @@ import aws_cdk as cdk
 
 from c3l_engageai.config import config
 from c3l_engageai.pipeline import Pipeline
-from c3l_engageai.stacks.datazone_cdk_stack import DatazoneCdkStack
 
 app = cdk.App()
 
@@ -19,13 +18,6 @@ Pipeline(
     env=deployment_environment,
 )
 
-
-DatazoneCdkStack(
-    app, 
-    f"{config.project_name}-pipeline-DatazoneCdkStac",
-    "DatazoneCdkStack",
-    env=deployment_environment,
-    )
 app.synth()
 
 
