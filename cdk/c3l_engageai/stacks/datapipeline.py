@@ -24,7 +24,7 @@ from c3l_engageai.services.s3 import (
 from c3l_engageai.services.kms import (
     create_datazone_kms
 )
-
+from c3l_engageai.config import config
 class Datapipeline(Stack):
     """
     We are creating a stack that will only contain SecretsManager secrets.
@@ -60,7 +60,9 @@ class Datapipeline(Stack):
             self, 
             execution_role,
             s3_bucket=bucket,
-            s3_prefix_key="engageai_indicator/"
+            s3_prefix_key="engageai_indicator/",
+            account = config.environment_accounts[branch].id,
+            region = config.environment_accounts[branch].region
         )
 
 

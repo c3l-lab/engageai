@@ -11,7 +11,10 @@ def create_datazone(
         scope: Construct, 
         execution_role: iam.IRole,
         s3_bucket: aws_s3.IBucket,
-        s3_prefix_key: str) -> datazone.CfnDomain:
+        s3_prefix_key: str,
+        account: str,
+        region: str
+    ) -> datazone.CfnDomain:
     # 2. Domain
     domain = datazone.CfnDomain(
         scope, "EngageAiDataZoneDomain",
@@ -37,8 +40,8 @@ def create_datazone(
         name="data-lake-profile",
         description="Environment profile for data lake operations",
         project_identifier=project.attr_id,
-        # aws_account_id=self.account,
-        # aws_account_region=self.region
+        aws_account_id=account,
+        aws_account_region=region
     )
     
     # Create DataZone Environment
