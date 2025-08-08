@@ -161,6 +161,40 @@ domain_id = create_domain()
 
 project_id = create_project(domain_id)
 print(project_id)
+import boto3
+
+
+def create_environment(domain_id, project_id ):
+    # Create environment
+    response = datazone.create_environment(
+        domainIdentifier=domain_id,
+        projectIdentifier=project_id,
+        name='MyAthenaEnv',
+        description='Athena environment for querying data',
+        environmentBlueprintIdentifier='default_athena_environment',  # or whatever blueprint ID you're using
+        awsAccountId='123456789012',  # Account where environment is created
+        awsRegion='ap-southeast-2',
+        userParameters=[
+            {
+                'name': 'glue_database_name',
+                'value': 'your_db_name'
+            },
+            {
+                'name': 's3_location',
+                'value': 's3://your-data-bucket/'
+            },
+            {
+                'name': 'athena_workgroup',
+                'value': 'primary'
+            }
+        ],
+        provisioningRoleArn='arn:aws:iam::123456789012:role/DataZoneProvisioningRole',  # IAM role to assume
+        environmentRoleArn='arn:aws:iam::123456789012:role/DataZoneEnvironmentRole'    # IAM role for runtime access
+    )
+
+    print("Environment creation response:")
+    print(response)
+
 
 
 ### ---------- Step 3a: Register Glue Asset Source ----------

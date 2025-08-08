@@ -18,19 +18,10 @@ from c3l_engageai.services.datazone import (
 from c3l_engageai.services.iam import (
     create_datazone_execution_role
 )
-from c3l_engageai.services.s3 import (
-    create_datazone_s3_bucket
-)
-from c3l_engageai.services.kms import (
-    create_datazone_kms
-)
-from c3l_engageai.config import config
-class Datapipeline(Stack):
-    """
-    We are creating a stack that will only contain SecretsManager secrets.
-    This stack needs to be deployed before any other stack that uses secrets.
-    """
 
+
+class Datapipeline(Stack):
+  
     def __init__(
         self, scope: Construct, construct_id: str, branch: Environment, **kwargs
     ) -> None:
@@ -47,22 +38,25 @@ class Datapipeline(Stack):
             lambda_layer=[lambda_layer]
         )
 
-        kms = create_datazone_kms(self, "datazone-kms-key")
-        bucket = create_datazone_s3_bucket(self, kms)
-
-        
         # 1. Execution Role
         execution_role = create_datazone_execution_role(
-            self, kms, bucket
+            self, branch, self.stack_name
         )
+
+        bucket = aws_s3.Bucket.from_bucket_name(
+            self, "EngageAiDatasetBucket",
+            bucket_name="engage-ai-dataset",
+        )
+        
         # 2. Domain
         domain, project = create_datazone(
             self, 
             execution_role,
             s3_bucket=bucket,
-            s3_prefix_key="engageai_indicator/",
-            account = config.environment_accounts[branch].id,
-            region = config.environment_accounts[branch].region
+            s3_prefix_key="engageai_indicator/"
         )
+
+
+
 
 

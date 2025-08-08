@@ -43,6 +43,34 @@ def create_datazone(
         aws_account_id=account,
         aws_account_region=region
     )
+
+
+    # datazone_environment = datazone.CfnEnvironment(
+    #     scope, "EngageAIDataZoneEnvironment",
+    #     domain_identifier=domain.attr_id,
+    #     project_identifier=project.attr_id,
+    #     name="MyAthenaEnv",
+    #     description="Athena environment created via CDK",
+    #     environment_blueprint_identifier="default_athena_environment",
+    #     aws_account_id="123456789012",
+    #     aws_region="ap-southeast-2",
+    #     provisioning_role_arn="arn:aws:iam::123456789012:role/DataZoneProvisioningRole",
+    #     environment_role_arn="arn:aws:iam::123456789012:role/DataZoneEnvironmentRole",
+    #     user_parameters=[
+    #         datazone.CfnEnvironment.UserParameterProperty(
+    #             name="glue_database_name",
+    #             value="your_db_name"
+    #         ),
+    #         datazone.CfnEnvironment.UserParameterProperty(
+    #             name="s3_location",
+    #             value="s3://your-data-bucket/"
+    #         ),
+    #         datazone.CfnEnvironment.UserParameterProperty(
+    #             name="athena_workgroup",
+    #             value="primary"
+    #         )
+    #     ]
+    # )
     
     # Create DataZone Environment
     datazone_environment = datazone.CfnEnvironment(
@@ -74,4 +102,7 @@ def create_datazone(
         )
         # Removed automatic schedule - manual control for direct S3 sharing
     )
+
+
+
     return domain, project
