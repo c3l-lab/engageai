@@ -12,10 +12,10 @@ from aws_cdk import (
 from constructs import Construct
 import json
 
-def create_datazone_s3_bucket(scope: Construct, stack: Stack) -> s3.Bucket:
+def create_datazone_s3_bucket(scope: Construct, datazone_kms_key: kms.Key) -> s3.Bucket:
     return s3.Bucket(
-        self, "DataZoneDataBucket",
-        bucket_name=f"datazone-data-bucket-{self.account}-{self.region}",
+        scope, "DataZoneDataBucket",
+        bucket_name=f"datazone-data-bucket-test",
         versioned=True,
         encryption=s3.BucketEncryption.KMS,
         encryption_key=datazone_kms_key,

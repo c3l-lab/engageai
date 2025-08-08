@@ -18,7 +18,12 @@ from c3l_engageai.services.datazone import (
 from c3l_engageai.services.iam import (
     create_datazone_execution_role
 )
-
+from c3l_engageai.services.s3 import (
+    create_datazone_s3_bucket
+)
+from c3l_engageai.services.kms import (
+    create_datazone_kms
+)
 
 class Datapipeline(Stack):
     """
@@ -42,16 +47,14 @@ class Datapipeline(Stack):
             lambda_layer=[lambda_layer]
         )
 
+        kms = create_datazone_kms(self, "datazone-kms-key")
+        bucket = create_datazone_s3_bucket(self, kms)
+
+        
         # 1. Execution Role
         execution_role = create_datazone_execution_role(
-            self, branch, self.stack_name
+            self, kms, bucket
         )
-
-        bucket = aws_s3.Bucket.from_bucket_name(
-            self, "EngageAiDatasetBucket",
-            bucket_name="engage-ai-dataset",
-        )
-        
         # 2. Domain
         domain, project = create_datazone(
             self, 
