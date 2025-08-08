@@ -1,6 +1,7 @@
 import boto3
 import time
 import os
+import json
 from botocore.exceptions import ClientError
 
 profile_name= 'c3l-analytics'
@@ -166,8 +167,8 @@ print(project_id)
 def register_glue_asset_source(domain_id):
     response = datazone.create_asset_source(
         domainIdentifier=domain_id,
-        name='glue_catalog_source',
-        description='Glue data catalog asset source',
+        name='glue_catalog_engageai_source',
+        description='Glue data catalog asset source for Engage_ai',
         assetSourceType='GLUE',
         configuration={
             'glueConfiguration': {
@@ -182,22 +183,144 @@ def register_glue_asset_source(domain_id):
 
 
 ### ---------- Step 3b: Register S3 Asset Source ----------
-def register_s3_asset_source(domain_id):
-    response = datazone.create_asset_source(
-        domainIdentifier=domain_id,
-        name='s3_asset_source',
-        description='S3 bucket for AI processed assets',
-        assetSourceType='S3',
-        configuration={
-            's3Configuration': {
-                'bucket': '<your-s3-bucket>',
-                'keyPrefix': 'clean/indicators/'
+
+
+# def register_s3_asset(domain_id, project_id):
+#     response = datazone.create_asset(
+#         domainIdentifier=domain_id,
+#         projectIdentifier=project_id,
+#         name='engageai_s3_asset',
+#         typeIdentifier='S3',
+#         typeRevision='1',
+#         description='S3 bucket for Engage_AI processed assets',
+#         predictionConfiguration={
+#             'enabled': False
+#         },
+#         externalIdentifier='engageai_indicator_dataset',
+#         resourceMetadata={
+#             's3': {
+#                 'bucket': 'engage-ai-dataset',
+#                 'key': 'engageai_indicator/'  # folder path inside bucket
+#             }
+#         }
+#     )
+
+#     asset_id = response.get('id')
+#     print(f"[✔] Created S3 asset with ID: {asset_id}")
+#     return asset_id
+
+
+import boto3
+
+def register_s3_asset_source(domain_id, project_id):
+
+    # Optional: check if asset source already exists to avoid duplication
+    source_name = 'engageai_s3_source'
+    
+    # Register the S3 bucket as an asset source
+    try:
+        response = datazone.create_asset_source(
+            domainIdentifier=domain_id,
+            name=source_name,
+            description='S3 asset source for Engage AI project',
+            projectIdentifier=project_id,
+            assetSourceType='S3',
+            configuration={
+                's3AssetSourceConfiguration': {
+                    'bucket': 'engage-ai-dataset',
+                    'keyPrefix': 'engageai_indicator/'  # Optional path inside bucket
+                }
             }
-        }
-    )
-    asset_source_id = response['id']
-    print(f"[✔] S3 asset source registered: {asset_source_id}")
-    return asset_source_id
+        )
+        source_id = response['id']
+        print(f"✅ S3 asset source registered with ID: {source_id}")
+        return source_id
+    except Exception as e:
+        print("❌ Failed to register S3 asset source:", str(e))
+        return None
+
+
+# def register_s3_asset(domain_id, project_id,asset_name='Engage_AI indicator index from S3'):
+
+#     metadata_forms = [
+#         {
+#             "formName": "AssetMetadataForm",
+#             "content": json.dumps({  # Convert to JSON string
+#                 "description": "Engage_AI S3 Data asset registered via script",
+#                 "assetOwner": "Engage_ai_c3l_team",
+#                 "sensitivity": "Confidential"
+#             })
+#         }
+#     ]
+#     # Create the asset
+#     try:
+#         response = datazone.create_asset(
+#             domainIdentifier=domain_id,
+#             name=asset_name,
+#             typeIdentifier='S3',
+#             typeRevision='1',
+#             owningProjectIdentifier=project_id,
+#             externalIdentifier='s3:/engage-ai-dataset/engageai_indicator/',
+#             description='Cleaned data converted into indicator index from S3 bucket',
+#             formsInput=metadata_forms
+#         )
+#         print("✅ Asset registered successfully.")
+#         return response
+
+#     except Exception as e:
+#         print("❌ Failed to register asset:", str(e))
+#         return None
+
+    # response = datazone.create_asset(
+    #     domainIdentifier=domain_id,
+    #     owningProjectIdentifier=project_id,
+    #     name='engageai_s3_asset_source',
+    #     typeIdentifier='S3',
+    #     typeRevision='1',
+    #     description='S3 bucket for Engage_AI processed assets',
+    #     formsInput=[
+    #         {
+    #             'formName': 'S3EngageAIAssetForm',  # replace with your actual form name
+    #             'content': json.dumps({
+    #                 'bucket': 'engage-ai-dataset',
+    #                 'key': 'engageai_indicator/',  # optional
+    #                 # add additional fields depending on your form definition
+    #             })
+    #         }
+    #     ]
+    # )
+    # asset_id = response['id']
+    # print(f"[✔] Created S3 asset, ID: {asset_id}")
+    # return asset_id
+
+
+
+
+    # response = datazone.create_asset(
+    #     domainIdentifier=domain_id,
+    #     projectIdentifier=project_id,
+    #     name='engageai_s3_asset_source',
+    #     typeIdentifier='S3',
+    #     typeRevision='1',
+    #     description='S3 bucket for Engage_AI processed assets',
+    #     predictionConfiguration={
+    #         "businessNameGeneration": {
+    #             "enabled": False
+    #         }
+    #     },
+    #     externalIdentifier='engageai_indicator_dataset',
+    #     resourceMetadata={
+    #         's3': {
+    #             'bucket': 'engage-ai-dataset',
+    #             'key': 'engageai_indicator/'
+    #         }
+    #     }
+    # )
+
+    # asset_id = response['id']
+    # print(f"[✔] Created S3 asset, ID: {asset_id}")
+    # return asset_id
+
 
 
 ### ---------- Step 4: Create Environment Profile ----------
@@ -270,22 +393,47 @@ def search_assets(domain_id):
         print(f" - {hit['name']} ({hit['id']})")
 
 
+### ---------- Data Product ----------
+
+def create_data_product(domain_id, project_id, asset_id):
+    response = datazone.create_data_product(
+        domainIdentifier=domain_id,
+        projectIdentifier=project_id,
+        name='engageai_data_product',
+        description='Contains EngageAI Indicator S3 dataset',
+        glossaryTerms=[],
+        assetForms=[],
+        recommendationConfiguration={
+            'enableBusinessNameGeneration': False
+        },
+        assetIdentifiers=[
+            {
+                'identifier': asset_id,
+                'type': 'ASSET'
+            }
+        ]
+    )
+
+    data_product_id = response.get('id')
+    print(f"[✔] Created Data Product with ID: {data_product_id}")
+    return data_product_id
+
 
 
 # ### ---------- 🚀 RUN THE FULL SETUP ----------
 # if __name__ == "__main__":
-# domain_id = create_domain()
-# time.sleep(3)
+domain_id = create_domain()
+time.sleep(3)
 
-# # terms = list_glossary_terms(domain_id, profile_name='c3l-analytics')
-# # print(terms)
+# terms = list_glossary_terms(domain_id, profile_name='c3l-analytics')
+# print(terms)
 
-# project_id = create_project(domain_id)
-# print(project_id)
+project_id = create_project(domain_id)
+print(project_id)
     
     # glue_source_id = register_glue_asset_source(domain_id)
-    # s3_source_id = register_s3_asset_source(domain_id)
-    # time.sleep(3)
+s3_source_id = register_s3_asset_source(domain_id, project_id)
+time.sleep(3)
     
     # profile_id = create_environment_profile(domain_id)
     # time.sleep(3)

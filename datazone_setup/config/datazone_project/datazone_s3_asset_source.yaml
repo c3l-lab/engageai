@@ -1,0 +1,40 @@
+# AWSTemplateFormatVersion: '2010-09-09'
+# Resources:
+#   MyS3AssetSource:
+#     Type: AWS::DataZone::AssetSource
+#     Properties:
+#       DomainIdentifier:  dzd_43w640c69o98rm
+#       ProjectIdentifier: bvt33zwjba5maq
+#       Name: engageai-s3-source
+#       AssetSourceType: S3
+#       Configuration:
+#         S3AssetSourceConfiguration:
+#           Bucket: engage-ai-dataset
+#           KeyPrefix: engageai_indicator/
+
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Register S3 asset source in AWS DataZone
+
+Resources:
+  MyS3AssetSource:
+    Type: AWS::DataZone::AssetSource
+    Properties:
+      DomainIdentifier: dzd_43w640c69o98rm # Replace with your DataZone domain ID
+      Name: engageai-s3-source
+      Description: Registering Engage_ai S3 Indicator index bucket as asset source
+      AssetSourceType: S3
+      ProjectIdentifier: bvt33zwjba5maq # Replace with your DataZone project ID
+      Configuration:
+        S3BucketAssetSourceConfiguration:
+          Bucket: engage-ai-dataset # Replace with your S3 bucket name
+          AssetForms: []         # Optional: can specify metadata forms
+          AssetPublishingConfiguration:
+            AuthorizedPrincipalArns:
+         # Role that can access S3
+              - arn:aws:iam::184898280326:role/service-role/AmazonDataZoneDomainExecution
+              - arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520
+              - arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_C3L-ANALYTICS-DataScientists_089fa4f123c66e3c
+      Tags:
+        - Key: Environment
+          Value: dev
