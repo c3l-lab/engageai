@@ -27,20 +27,48 @@ def create_datazone(
         domain_identifier=domain.attr_id,
         name="engage-ai-project",
         description="Explore CURR3021 student engagement index via moodle behaviour record in log"
-    )
-    # S3 Asset Source
-    s3_asset_source = datazone.CfnAssetSource(
-        scope, "S3AssetSource",
+    )    
+    
+    # Create DataZone Environment Profile
+    environment_profile = datazone.CfnEnvironmentProfile(
+        scope, "DataZoneEnvironmentProfile",
         domain_identifier=domain.attr_id,
-        name="s3-azure-ingested-data",
-        asset_source_type="S3",
-        configuration={
-            "s3Configuration": {
-                "bucket": s3_bucket.bucket_name,  # ✅ your real bucket name
-                "keyPrefix": s3_prefix_key        # ✅ optional folder path
-            }
-        }
+        environment_blueprint_identifier="DefaultDataLake",
+        name="data-lake-profile",
+        description="Environment profile for data lake operations",
+        project_identifier=project.attr_id,
+        # aws_account_id=self.account,
+        # aws_account_region=self.region
+    )
+    
+    # Create DataZone Environment
+    datazone_environment = datazone.CfnEnvironment(
+        scope, "DataZoneEnvironment",
+        domain_identifier=domain.attr_id,
+        environment_profile_identifier=environment_profile.attr_id,
+        name="production-data-environment",
+        description="Production environment for data operations",
+        project_identifier=project.attr_id
+    )
+
+    # Create Data Source for direct S3 access (no Glue crawler)
+    data_source = datazone.CfnDataSource(
+        scope, "S3DataSource",
+        domain_identifier=domain.attr_id,
+        environment_identifier=datazone_environment.attr_id,
+        name="direct-s3-data-source",
+        project_identifier=domain.attr_id,
+        type="S3",
+        description="Direct S3 data source for third-party data sharing",
+        configuration=datazone.CfnDataSource.DataSourceConfigurationInputProperty(
+            # Using S3 configuration instead of Glue
+            # DataZone will handle S3 objects directly
+        ),
+        enable_setting="ENABLED",
+        publish_on_import=False,  # Manual publishing for direct S3 control
+        recommendation=datazone.CfnDataSource.RecommendationConfigurationProperty(
+            enable_business_name_generation=True
+        )
+        # Removed automatic schedule - manual control for direct S3 sharing
     )
     return domain, project
-
-    

@@ -1,4 +1,9 @@
-from aws_cdk import aws_iam
+from aws_cdk import (
+    aws_iam,
+    aws_iam as iam,
+    aws_s3,
+    aws_kms
+)
 from constructs import Construct
 
 from c3l_engageai.config import Environment
@@ -91,19 +96,46 @@ def create_lambda_role(
     )
 
 def create_datazone_execution_role(
-    scope: Construct, branch: Environment, stack_name: str
+    scope: Construct, 
+    datazone_kms_key: aws_kms.Key,
+    data_bucket: aws_s3.Bucket
 ) -> aws_iam.Role:
-    return aws_iam.Role(
-        scope, "DataZoneExecutionRole",
-        assumed_by=aws_iam.ServicePrincipal("datazone.amazonaws.com"),
-           managed_policies=[
-            # S3 Access
-            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
-            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSGlueConsoleFullAccess"),
-            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSGlueServiceRole"),
-            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonAthenaFullAccess"),
-            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AmazonDataZoneFullAccess"),
-            aws_iam.ManagedPolicy.from_aws_managed_policy_name("AWSLakeFormationDataAdmin")
-        ]
+    return iam.Role(
+        scope, "DataZoneDomainExecutionRole",
+        assumed_by=iam.ServicePrincipal("datazone.amazonaws.com"),
+        managed_policies=[
+            iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AmazonDataZoneServiceRolePolicy")
+        ],
+        inline_policies={
+            "DataZoneS3Access": iam.PolicyDocument(
+                statements=[
+                    iam.PolicyStatement(
+                        effect=iam.Effect.ALLOW,
+                        actions=[
+                            "s3:GetObject",
+                            "s3:PutObject",
+                            "s3:DeleteObject",
+                            "s3:ListBucket",
+                            "s3:GetBucketLocation"
+                        ],
+                        resources=[
+                            data_bucket.bucket_arn,
+                            f"{data_bucket.bucket_arn}/*"
+                        ]
+                    ),
+                    iam.PolicyStatement(
+                        effect=iam.Effect.ALLOW,
+                        actions=[
+                            "kms:Decrypt",
+                            "kms:DescribeKey",
+                            "kms:Encrypt",
+                            "kms:GenerateDataKey*",
+                            "kms:ReEncrypt*"
+                        ],
+                        resources=[datazone_kms_key.key_arn]
+                    )
+                ]
+            )
+        }
     )
 
