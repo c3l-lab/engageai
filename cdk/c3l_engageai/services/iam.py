@@ -96,10 +96,10 @@ def create_lambda_role(
     )
 
 def create_datazone_execution_role(
-    scope: Construct, 
-    datazone_kms_key: aws_kms.Key,
-    data_bucket: aws_s3.Bucket
-) -> aws_iam.Role:
+    scope: Construct,
+    datazone_kms_key: kms.Key,
+    data_bucket: s3.Bucket
+) -> iam.Role:
     return iam.Role(
         scope, "DataZoneDomainExecutionRole",
         assumed_by=iam.ServicePrincipal("datazone.amazonaws.com"),
@@ -138,4 +138,3 @@ def create_datazone_execution_role(
             )
         }
     )
-

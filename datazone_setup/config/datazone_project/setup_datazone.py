@@ -8,477 +8,166 @@ profile_name= 'c3l-analytics'
 region_name='ap-southeast-2'
 SESSION = boto3.Session(profile_name='c3l-analytics')  # Replace with your actual profile
 datazone = SESSION.client('datazone', region_name='ap-southeast-2')
+athena = SESSION.client('athena', region_name=region_name)
 
-
-### ---------- Step 1: Create Domain ----------
-# def create_domain():
-#     response = datazone.create_domain(
-#         name='engage_ai_datazone',
-#         description='DataZone domain for Engage AI project',
-#         domainExecutionRole='arn:aws:iam::184898280326:role/service-role/AmazonDataZoneDomainExecution',
-#         kmsKeyIdentifier='arn:aws:kms:ap-southeast-2:184898280326:key/cfcbd85c-6eb3-47c4-b5e5-2dca0fce71c4'
-#     )
-#     domain_id = response['id']
-#     print(f"[✔] Domain created: {domain_id}")
-#     return domain_id
-
-def create_domain():
-    # First, list existing domains and check if one with the target name exists
-    response = datazone.list_domains()
-    target_name = 'engage_ai_datazone'
-
-    for domain in response.get('items', []):
-        if domain.get('name') == target_name:
-            domain_id = domain.get('id')
-            print(f"[ℹ] Domain '{target_name}' already exists with ID: {domain_id}")
-            return domain_id
-
-    # If not found, create new domain
-    response = datazone.create_domain(
-        name=target_name,
-        description='DataZone domain for Engage AI project',
-        domainExecutionRole='arn:aws:iam::184898280326:role/service-role/AmazonDataZoneDomainExecution',
-        kmsKeyIdentifier='arn:aws:kms:ap-southeast-2:184898280326:key/cfcbd85c-6eb3-47c4-b5e5-2dca0fce71c4'
-    )
-    domain_id = response['id']
-    print(f"[✔] Domain created: {domain_id}")
-    return domain_id
-
-def get_datazone_domain_details(domain_identifier: str, profile_name: str = 'default', region: str = 'ap-southeast-2'):
-
-    try:
-        session = boto3.Session(profile_name=profile_name, region_name=region)
-        datazone = session.client('datazone')
-        
-        response = datazone.get_domain(
-            identifier=domain_identifier
-        )
-        return response
-
-    except ClientError as e:
-        print(f"AWS ClientError: {e}")
-        return None
-    except Exception as e:
-        print(f"General error: {e}")
-        return None
-
-
-def get_datazone_domain_id(domain_identifier: str, profile_name: str = 'default', region: str = 'ap-southeast-2') -> str:
-    try:
-        session = boto3.Session(profile_name=profile_name, region_name=region)
-        datazone = session.client('datazone')
-
-        response = datazone.get_domain(identifier=domain_identifier)
-        return response.get('id')  # Only return the domain ID
-
-    except ClientError as e:
-        print(f"AWS ClientError: {e}")
-        return None
-    except Exception as e:
-        print(f"General error: {e}")
-        return None
-
-
-# domain_id = "dzd_43w640c69o98rm"  # replace with your real domain ID
-# domain_id = create_domain()
-# details = get_datazone_domain_details(domain_id, profile_name='c3l-analytics')
-# if details:
-#     print("Domain details:")
-#     print(details)
-# id_domain=get_datazone_domain_id(domain_id, profile_name='c3l-analytics')
-# print(id_domain)
-
-
-
-############################## ---------- Create Glossary Term----------  ############################## 
-
-# import os
-# import sys
-
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..')))
-
-# print(sys.path)
-
-# from datazone_setup.config.datazone_project.setup_glossary import get_or_create_glossary, get_or_create_glossary_term
-# # term_name = "Student_Engagement_Indicator"
-# # term_description = "Glossary term describing student engagement indicators"
-
-# domain_id = create_domain()
-
-# glossary_name = 'MainGlossary'
-# glossary_description = 'Glossary for Engage_AI indicators and all dataset'
-# glossary_id = get_or_create_glossary(domain_id,glossary_name, glossary_description, profile_name, region_name)
-# print(f"Using glossary term ID: {glossary_id}")
-
-# term_name='Student_Engagement_Indicator'
-# term_description='Describes student engagement levels with Indicator'
-# # Create or get term
-# if glossary_id:
-#     term_id = get_or_create_glossary_term(domain_id, glossary_id, term_name,term_description, profile_name, region_name)
-#     print(f"Using glossary term ID: {term_id}")
-
-
-### ---------- Step 2: Create Project ----------
-# def create_project(domain_id):
-#     response = datazone.create_project(
-#         domainIdentifier=domain_id,
-#         name='engage_ai_project',
-#         description='Project for managing Engage AI raw data and indicator assets',
-#         glossaryTerms=[],
-#         userParameters=[]
-#     )
-#     project_id = response['id']
-#     print(f"[✔] Project created: {project_id}")
-#     return project_id
-
-def create_project(domain_id):
-    target_name = 'engage_ai_project'
-
-    # List existing projects in the domain
-    response = datazone.list_projects(domainIdentifier=domain_id)
-
-    for project in response.get('items', []):
-        if project.get('name') == target_name:
-            project_id = project.get('id')
-            print(f"[ℹ] Project '{target_name}' already exists with ID: {project_id}")
-            return project_id
-
-    # Create a new project — minimal version
-    response = datazone.create_project(
-        domainIdentifier=domain_id,
-        name=target_name,
-        description='Project for managing Engage AI raw data and indicator assets'
-    )
-    project_id = response['id']
-    print(f"[✔] Project created: {project_id}")
-    return project_id
-
-domain_id = create_domain()
-# time.sleep(3)
-
-# terms = list_glossary_terms(domain_id, profile_name='c3l-analytics')
-# print(terms)
-
-project_id = create_project(domain_id)
-print(project_id)
 import boto3
 
-
-def create_environment(domain_id, project_id ):
-    # Create environment
-    response = datazone.create_environment(
+def add_member_to_project(domain_id, project_id, member_type, member_identifier, role='CONTRIBUTOR'):
+    response = datazone.create_project_membership(
         domainIdentifier=domain_id,
         projectIdentifier=project_id,
-        name='MyAthenaEnv',
-        description='Athena environment for querying data',
-        environmentBlueprintIdentifier='default_athena_environment',  # or whatever blueprint ID you're using
-        awsAccountId='123456789012',  # Account where environment is created
-        awsRegion='ap-southeast-2',
-        userParameters=[
-            {
-                'name': 'glue_database_name',
-                'value': 'your_db_name'
-            },
-            {
-                'name': 's3_location',
-                'value': 's3://your-data-bucket/'
-            },
-            {
-                'name': 'athena_workgroup',
-                'value': 'primary'
-            }
-        ],
-        provisioningRoleArn='arn:aws:iam::123456789012:role/DataZoneProvisioningRole',  # IAM role to assume
-        environmentRoleArn='arn:aws:iam::123456789012:role/DataZoneEnvironmentRole'    # IAM role for runtime access
-    )
-
-    print("Environment creation response:")
-    print(response)
-
-
-
-### ---------- Step 3a: Register Glue Asset Source ----------
-def register_glue_asset_source(domain_id):
-    response = datazone.create_asset_source(
-        domainIdentifier=domain_id,
-        name='glue_catalog_engageai_source',
-        description='Glue data catalog asset source for Engage_ai',
-        assetSourceType='GLUE',
-        configuration={
-            'glueConfiguration': {
-                'catalog': 'AwsDataCatalog',
-                'database': '<your-glue-database>'
+        designation='CONTRIBUTOR',  # project role
+        member={
+            "type": "ROLE",  # or USER or GROUP
+            "principal": {
+                "arn": "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520"
             }
         }
     )
-    asset_source_id = response['id']
-    print(f"[✔] Glue asset source registered: {asset_source_id}")
-    return asset_source_id
+    print("Membership added:", response)
 
 
-### ---------- Step 3b: Register S3 Asset Source ----------
+# # Example usage:
+# domain_id = 'your-domain-id'
+# project_id = 'your-project-id'
+member_type = 'ROLE'  # or 'GROUP' or 'ROLE'
+member_identifier = 'arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520'  # example IAM user ARN
+role = 'CONTRIBUTOR'
+
+# add_member_to_project(domain_id, project_id, member_type, member_identifier, role)
 
 
-# def register_s3_asset(domain_id, project_id):
-#     response = datazone.create_asset(
-#         domainIdentifier=domain_id,
-#         projectIdentifier=project_id,
-#         name='engageai_s3_asset',
-#         typeIdentifier='S3',
-#         typeRevision='1',
-#         description='S3 bucket for Engage_AI processed assets',
-#         predictionConfiguration={
-#             'enabled': False
-#         },
-#         externalIdentifier='engageai_indicator_dataset',
-#         resourceMetadata={
-#             's3': {
-#                 'bucket': 'engage-ai-dataset',
-#                 'key': 'engageai_indicator/'  # folder path inside bucket
-#             }
-#         }
-#     )
+def list_environment_blueprint_configurations(domain_id):
+    response = datazone.list_environment_blueprint_configurations(
+        domainIdentifier=domain_id,
+        maxResults=50
+    )
+    configs = response.get('items', [])
+    blueprint_ids = []
+    for config in configs:
+        blueprint_id = config.get('environmentBlueprintId')
+        print(f"Blueprint ID: {blueprint_id}, Regions: {config.get('enabledRegions')}")
+        if blueprint_id:
+            blueprint_ids.append(blueprint_id)
+    return blueprint_ids
 
-#     asset_id = response.get('id')
-#     print(f"[✔] Created S3 asset with ID: {asset_id}")
-#     return asset_id
-
-
-import boto3
-
-def register_s3_asset_source(domain_id, project_id):
-
-    # Optional: check if asset source already exists to avoid duplication
-    source_name = 'engageai_s3_source'
-    
-    # Register the S3 bucket as an asset source
-    try:
-        response = datazone.create_asset_source(
-            domainIdentifier=domain_id,
-            name=source_name,
-            description='S3 asset source for Engage AI project',
-            projectIdentifier=project_id,
-            assetSourceType='S3',
-            configuration={
-                's3AssetSourceConfiguration': {
-                    'bucket': 'engage-ai-dataset',
-                    'keyPrefix': 'engageai_indicator/'  # Optional path inside bucket
-                }
-            }
-        )
-        source_id = response['id']
-        print(f"✅ S3 asset source registered with ID: {source_id}")
-        return source_id
-    except Exception as e:
-        print("❌ Failed to register S3 asset source:", str(e))
-        return None
-
-
-# def register_s3_asset(domain_id, project_id,asset_name='Engage_AI indicator index from S3'):
-
-#     metadata_forms = [
-#         {
-#             "formName": "AssetMetadataForm",
-#             "content": json.dumps({  # Convert to JSON string
-#                 "description": "Engage_AI S3 Data asset registered via script",
-#                 "assetOwner": "Engage_ai_c3l_team",
-#                 "sensitivity": "Confidential"
-#             })
-#         }
-#     ]
-#     # Create the asset
-#     try:
-#         response = datazone.create_asset(
-#             domainIdentifier=domain_id,
-#             name=asset_name,
-#             typeIdentifier='S3',
-#             typeRevision='1',
-#             owningProjectIdentifier=project_id,
-#             externalIdentifier='s3:/engage-ai-dataset/engageai_indicator/',
-#             description='Cleaned data converted into indicator index from S3 bucket',
-#             formsInput=metadata_forms
-#         )
-#         print("✅ Asset registered successfully.")
-#         return response
-
-#     except Exception as e:
-#         print("❌ Failed to register asset:", str(e))
-#         return None
-
-    # response = datazone.create_asset(
-    #     domainIdentifier=domain_id,
-    #     owningProjectIdentifier=project_id,
-    #     name='engageai_s3_asset_source',
-    #     typeIdentifier='S3',
-    #     typeRevision='1',
-    #     description='S3 bucket for Engage_AI processed assets',
-    #     formsInput=[
-    #         {
-    #             'formName': 'S3EngageAIAssetForm',  # replace with your actual form name
-    #             'content': json.dumps({
-    #                 'bucket': 'engage-ai-dataset',
-    #                 'key': 'engageai_indicator/',  # optional
-    #                 # add additional fields depending on your form definition
-    #             })
-    #         }
-    #     ]
-    # )
-    # asset_id = response['id']
-    # print(f"[✔] Created S3 asset, ID: {asset_id}")
-    # return asset_id
-
-
-
-
-    # response = datazone.create_asset(
-    #     domainIdentifier=domain_id,
-    #     projectIdentifier=project_id,
-    #     name='engageai_s3_asset_source',
-    #     typeIdentifier='S3',
-    #     typeRevision='1',
-    #     description='S3 bucket for Engage_AI processed assets',
-    #     predictionConfiguration={
-    #         "businessNameGeneration": {
-    #             "enabled": False
-    #         }
-    #     },
-    #     externalIdentifier='engageai_indicator_dataset',
-    #     resourceMetadata={
-    #         's3': {
-    #             'bucket': 'engage-ai-dataset',
-    #             'key': 'engageai_indicator/'
-    #         }
-    #     }
-    # )
-
-    # asset_id = response['id']
-    # print(f"[✔] Created S3 asset, ID: {asset_id}")
-    # return asset_id
-
-
-
-### ---------- Step 4: Create Environment Profile ----------
-def create_environment_profile(domain_id):
+def create_environment_profile(domain_id, project_id, blueprint_id, profile_name="EnvProfile", description="Environment Profile"):
     response = datazone.create_environment_profile(
         domainIdentifier=domain_id,
-        name='default-env-profile',
-        description='Default environment for Engage AI project',
-        awsAccountId='<your-account-id>',
-        awsRegion='your-region',
-        environmentBlueprintIdentifier='default-data-lake',  # or use your custom blueprint
-        projectIdentifier='engage_ai_project'
+        name=profile_name,
+        description=description,
+        projectId=project_id,
+        blueprintId=blueprint_id
     )
-    profile_id = response['id']
-    print(f"[✔] Environment profile created: {profile_id}")
-    return profile_id
+    env_profile_id = response['id']
+    print(f"Created environment profile with ID: {env_profile_id}")
+    return env_profile_id
 
-
-### ---------- Step 5: Create Asset (e.g., from S3) ----------
-def create_asset(domain_id, project_id):
-    response = datazone.create_asset(
+def create_environment(domain_id, project_id, env_profile_id, environment_name="EnvName", description="Environment description"):
+    response = datazone.create_environment(
         domainIdentifier=domain_id,
-        projectIdentifier=project_id,
-        name='student_engagement_index',
-        typeIdentifier='S3',
-        externalIdentifier='<your-s3-path>',
-        description='Engagement Index CSV from Lambda output',
-        formsInput=[{
-            'formName': 'AssetForm',
-            'typeIdentifier': 'S3AssetForm',
-            'content': '{"columns": ["student_id", "engagement_score"], "format": "csv"}'
-        }]
+        projectId=project_id,
+        environmentProfileId=env_profile_id,
+        name=environment_name,
+        description=description
     )
-    asset_id = response['id']
-    print(f"[✔] Asset created: {asset_id}")
-    return asset_id
+    env_id = response['id']
+    print(f"Created environment with ID: {env_id}")
+    return env_id
 
+def create_glue_data_source(domain_id, project_id, env_id, data_source_name, glue_db_name, glue_role_arn):
+    glue_config = {
+        "glueRunConfiguration": {
+            "catalogName": "AwsDataCatalog",
+            "dataAccessRole": glue_role_arn,
+            "relationalFilterConfigurations": [
+                {
+                    "databaseName": glue_db_name,
+                    "filterExpressions": [{"expression": "*", "type": "INCLUDE"}]
+                }
+            ]
+        }
+    }
 
-### ---------- Step 6: Update Asset ----------
-def update_asset(domain_id, asset_id):
-    response = datazone.update_asset(
+    response = datazone.create_data_source(
         domainIdentifier=domain_id,
-        identifier=asset_id,
-        name='student_engagement_index_v2',
-        description='Updated version with normalized engagement score',
+        projectId=project_id,
+        name=data_source_name,
+        type='GLUE',
+        configuration=glue_config,
+        environmentId=env_id,
+        publishOnImport=True
     )
-    print(f"[✔] Asset updated: {asset_id}")
-    return asset_id
+    data_source_id = response['id']
+    print(f"Created Glue data source with ID: {data_source_id}")
+    return data_source_id
 
+def run_athena_query(query, database, output_location):
+    """Run an Athena query and return the query execution ID."""
+    try:
+        response = athena.start_query_execution(
+            QueryString=query,
+            QueryExecutionContext={'Database': database},
+            ResultConfiguration={'OutputLocation': output_location}
+        )
+        query_execution_id = response['QueryExecutionId']
+        print(f"Athena query started with execution ID: {query_execution_id}")
+        return query_execution_id
+    except ClientError as e:
+        print(f"Athena query failed: {e}")
+        return None
 
-### ---------- Step 7: Publish Asset ----------
-def publish_asset(domain_id, asset_id):
-    response = datazone.create_asset_revision(
-        domainIdentifier=domain_id,
-        identifier=asset_id
-    )
-    print(f"[✔] Asset published: {asset_id}")
-    return asset_id
+def wait_for_athena_query(query_execution_id):
+    """Wait for Athena query to complete and return the status."""
+    import time
+    while True:
+        response = athena.get_query_execution(QueryExecutionId=query_execution_id)
+        status = response['QueryExecution']['Status']['State']
+        if status in ['SUCCEEDED', 'FAILED', 'CANCELLED']:
+            print(f"Athena query status: {status}")
+            return status
+        print("Waiting for Athena query to complete...")
+        time.sleep(5)
 
+def get_athena_query_results(query_execution_id):
+    """Fetch Athena query results."""
+    response = athena.get_query_results(QueryExecutionId=query_execution_id)
+    results = response['ResultSet']['Rows']
+    for row in results:
+        print([col.get('VarCharValue') for col in row['Data']])
 
-### ---------- Step 8 (Optional): Search for Assets ----------
-def search_assets(domain_id):
-    response = datazone.search(
-        domainIdentifier=domain_id,
-        searchScope='ASSET',
-        searchText='engagement'
-    )
-    print("[✔] Search Results:")
-    for hit in response.get('items', []):
-        print(f" - {hit['name']} ({hit['id']})")
+# # === Example Usage ===
+# def main():
+# domain_id = 'your-domain-id'
+# project_id = 'your-project-id'
+# glue_db_name = 'your_glue_database_name'
+# glue_role_arn = 'arn:aws:iam::123456789012:role/your-glue-access-role'
+# data_source_name = 'MyGlueDataSource'
+# athena_output = 's3://your-athena-query-results-bucket/'
 
+# Step 1: Get blueprint IDs
 
-### ---------- Data Product ----------
+blueprint_ids = list_environment_blueprint_configurations(domain_id)
+if not blueprint_ids:
+print("No blueprint configurations found. Exiting.")
+return
 
-def create_data_product(domain_id, project_id, asset_id):
-    response = datazone.create_data_product(
-        domainIdentifier=domain_id,
-        projectIdentifier=project_id,
-        name='engageai_data_product',
-        description='Contains EngageAI Indicator S3 dataset',
-        glossaryTerms=[],
-        assetForms=[],
-        recommendationConfiguration={
-            'enableBusinessNameGeneration': False
-        },
-        assetIdentifiers=[
-            {
-                'identifier': asset_id,
-                'type': 'ASSET'
-            }
-        ]
-    )
+blueprint_id = blueprint_ids[0]  # Pick first blueprint
 
-    data_product_id = response.get('id')
-    print(f"[✔] Created Data Product with ID: {data_product_id}")
-    return data_product_id
+# Step 2: Create environment profile
+env_profile_id = create_environment_profile(domain_id, project_id, blueprint_id)
 
+# Step 3: Create environment
+env_id = create_environment(domain_id, project_id, env_profile_id)
 
+# Step 4: Create Glue data source
+data_source_id = create_glue_data_source(domain_id, project_id, env_id, data_source_name, glue_db_name, glue_role_arn)
 
-# ### ---------- 🚀 RUN THE FULL SETUP ----------
-# if __name__ == "__main__":
-domain_id = create_domain()
-time.sleep(3)
+# Step 5 (Optional): Run Athena query
+query = "SELECT * FROM your_table LIMIT 10;"
+query_execution_id = run_athena_query(query, glue_db_name, athena_output)
+if query_execution_id:
+status = wait_for_athena_query(query_execution_id)
+if status == 'SUCCEEDED':
+get_athena_query_results(query_execution_id)
 
-# terms = list_glossary_terms(domain_id, profile_name='c3l-analytics')
-# print(terms)
-
-project_id = create_project(domain_id)
-print(project_id)
-    
-    # glue_source_id = register_glue_asset_source(domain_id)
-s3_source_id = register_s3_asset_source(domain_id, project_id)
-time.sleep(3)
-    
-    # profile_id = create_environment_profile(domain_id)
-    # time.sleep(3)
-
-    # asset_id = create_asset(domain_id, project_id)
-    # time.sleep(3)
-
-    # update_asset(domain_id, asset_id)
-    # time.sleep(2)
-
-    # publish_asset(domain_id, asset_id)
-    # time.sleep(2)
-
-    # search_assets(domain_id)

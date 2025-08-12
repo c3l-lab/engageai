@@ -1,0 +1,18 @@
+{
+  "name": "engage-ai-blueprint",
+  "description": "Minimal blueprint with Glue Catalog integration",
+  "project": "bvt33zwjba5maq",
+  "blueprintConfiguration": {
+    "tools": [
+      {
+        "name": "GlueCatalog",
+        "type": "Glue",
+        "configuration": {}
+      }
+    ]
+  }
+}
+
+
+
+

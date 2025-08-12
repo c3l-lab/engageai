@@ -1,79 +1,178 @@
 from aws_cdk import (
-    Stack,
-    aws_datazone as datazone,
+    core,
     aws_iam as iam,
-    aws_glue as glue
+    aws_lambda as _lambda,
+    custom_resources as cr,
+)
+
+from constructs import Construct
+
+from c3l_engageai.config import Environment
+from c3l_engageai.services.secretsmanager import create_secrets
+from c3l_engageai.services.iam import create_lambda_default_execution_role
+# from c3l_engageai.services.lambdas import (
+#     create_shared_lambda_layer,
+#     create_lambda_athena_query
+# )
+from c3l_engageai.services.datazone import (
+    create_datazone
+)
+from c3l_engageai.services.iam import (
+    create_datazone_execution_role
+)
+
+from aws_cdk import (
+    core,
+    aws_iam as iam,
+    aws_s3 as s3,
+    aws_kms as kms,
+    aws_lambda as _lambda,
+    custom_resources as cr
 )
 from constructs import Construct
 
-class DatazoneCdkStack(Stack):
-
+class DataZoneStack(core.Stack):
     def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
 
-        # 1. Execution Role
-        execution_role = iam.Role(
-            self, "DataZoneExecutionRole",
-            assumed_by=iam.ServicePrincipal("datazone.amazonaws.com"),
-               managed_policies=[
-                # S3 Access
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AWSGlueConsoleFullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AWSGlueServiceRole"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonAthenaFullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonDataZoneFullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AWSLakeFormationDataAdmin")
-            ]
+        # 1. Create S3 + KMS
+        bucket = s3.Bucket.from_bucket_name(
+            self, "EngageAiDatasetBucket",
+            bucket_name="engage-ai-dataset"
         )
+        # kms_key = kms.Key(self, "DataZoneKey")
+        kms_key = 'arn:aws:kms:ap-southeast-2:184898280326:key/cfcbd85c-6eb3-47c4-b5e5-2dca0fce71c4'
 
-        # 2. Domain
-        domain = datazone.CfnDomain(
-            self, "EngageAiDataZoneDomain",
-            name="engageai-datazone-domain",
-            description="EngageAI data zone domain",
-            domain_execution_role=execution_role.role_arn,
-            kms_key_identifier="alias/aws/datazone"
+        # 2. Create Execution Role
+        execution_role = create_datazone_execution_role(self, kms_key, bucket)
+
+        # 3. Create Domain
+        domain_cr = cr.AwsCustomResource(
+            self, "CreateDataZoneDomain",
+            policy=cr.AwsCustomResourcePolicy.from_statements([
+                iam.PolicyStatement(
+                    actions=[
+                        "datazone:CreateDomain",
+                        "datazone:GetDomain"
+                    ],
+                    resources=["*"]
+                )
+            ]),
+            on_create=cr.AwsSdkCall(
+                service="DataZone",
+                action="createDomain",
+                parameters={
+                    "name": "engage_ai_datazone",
+                    "description": "DataZone domain for Engage AI project",
+                    "domainExecutionRole": execution_role.role_arn,
+                    "kmsKeyIdentifier": kms_key.key_arn
+                },
+                physical_resource_id=cr.PhysicalResourceId.from_response("id")
+            )
         )
+        domain_id = domain_cr.get_response_field("id")
 
-        # 3. Project
-        project = datazone.CfnProject(
-            self, "EngageAIDataProject",
-            domain_identifier=domain.attr_id,
-            name="engage-ai-project",
-            description="Explore CURR3021 student engagement index via moodle behaviour record in log"
+        # 4. Create Project
+        project_cr = cr.AwsCustomResource(
+            self, "CreateDataZoneProject",
+            policy=cr.AwsCustomResourcePolicy.from_statements([
+                iam.PolicyStatement(
+                    actions=[
+                        "datazone:CreateProject",
+                        "datazone:GetProject"
+                    ],
+                    resources=["*"]
+                )
+            ]),
+            on_create=cr.AwsSdkCall(
+                service="DataZone",
+                action="createProject",
+                parameters={
+                    "domainIdentifier": domain_id,
+                    "name": "engage_ai_project",
+                    "description": "Project for managing Engage AI raw data and indicator assets"
+                },
+                physical_resource_id=cr.PhysicalResourceId.from_response("id")
+            )
         )
+        project_id = project_cr.get_response_field("id")
+        project_cr.node.add_dependency(domain_cr)
 
-        # S3 Asset Source
-        s3_asset_source = datazone.CfnAssetSource(
-            self, "S3AssetSource",
-            domain_identifier=domain.attr_id,
-            name="s3-azure-ingested-data",
-            asset_source_type="S3",
-            configuration={
-                "s3Configuration": {
-                    "bucket": "engage-ai-dataset",         # ✅ your real bucket name
-                    "keyPrefix": "engageai_indicator/"     # ✅ optional folder path
-                }
-            }
+        # 5. Create Blueprint
+        blueprint_cr = cr.AwsCustomResource(
+            self, "CreateDataZoneBlueprint",
+            policy=cr.AwsCustomResourcePolicy.from_statements([
+                iam.PolicyStatement(
+                    actions=["datazone:CreateBlueprint", "datazone:GetBlueprint"],
+                    resources=["*"]
+                )
+            ]),
+            on_create=cr.AwsSdkCall(
+                service="DataZone",
+                action="createBlueprint",
+                parameters={
+                    "domainIdentifier": domain_id,
+                    "name": "MyDefaultBlueprint",
+                    "description": "Default environment blueprint created via CDK",
+                    "enabled": True
+                },
+                physical_resource_id=cr.PhysicalResourceId.from_response("id")
+            )
         )
-        # glue_db = glue.CfnDatabase(
-        #     self, "EngageAIGlueDatabase",
-        #     catalog_id=self.account,
-        #     database_input={
-        #         "name": "azure_s3_catalog"
-        #     }
-        # )
+        blueprint_id = blueprint_cr.get_response_field("id")
+        blueprint_cr.node.add_dependency(project_cr)
 
-        # # 4. Asset Source (Glue)
-        # asset_source = datazone.CfnAssetSource(
-        #     self, "EngageeAIGlueAssetSource",
-        #     domain_identifier=domain.attr_id,
-        #     name="engageai-glue-data-catalog",
-        #     asset_source_type="GLUE",
-        #     configuration={
-        #         "glueConfiguration": {
-        #             "catalog": "AwsDataCatalog",
-        #             "database": "azure_s3_catalog"
-        #         }
-        #     }
-        # )
+        # 6. Create Environment Profile
+        profile_cr = cr.AwsCustomResource(
+            self, "CreateDataZoneProfile",
+            policy=cr.AwsCustomResourcePolicy.from_statements([
+                iam.PolicyStatement(
+                    actions=["datazone:CreateEnvironmentProfile", "datazone:GetEnvironmentProfile"],
+                    resources=["*"]
+                )
+            ]),
+            on_create=cr.AwsSdkCall(
+                service="DataZone",
+                action="createEnvironmentProfile",
+                parameters={
+                    "domainIdentifier": domain_id,
+                    "name": "MyEnvProfile",
+                    "description": "Profile for environment",
+                    "environmentBlueprintIdentifier": blueprint_id,
+                    "userParameters": [
+                        {"name": "ExecutionRoleArn", "value": execution_role.role_arn}
+                    ]
+                },
+                physical_resource_id=cr.PhysicalResourceId.from_response("id")
+            )
+        )
+        profile_id = profile_cr.get_response_field("id")
+        profile_cr.node.add_dependency(blueprint_cr)
+
+        # 7. Create Environment
+        env_cr = cr.AwsCustomResource(
+            self, "CreateDataZoneEnvironment",
+            policy=cr.AwsCustomResourcePolicy.from_statements([
+                iam.PolicyStatement(
+                    actions=["datazone:CreateEnvironment"],
+                    resources=["*"]
+                )
+            ]),
+            on_create=cr.AwsSdkCall(
+                service="DataZone",
+                action="createEnvironment",
+                parameters={
+                    "domainIdentifier": domain_id,
+                    "projectIdentifier": project_id,
+                    "name": "MyEnvFromBlueprint",
+                    "description": "Environment created from default blueprint",
+                    "environmentBlueprintIdentifier": blueprint_id,
+                    "environmentProfileIdentifier": profile_id,
+                    "userParameters": [
+                        {"name": "ExecutionRoleArn", "value": execution_role.role_arn}
+                    ]
+                },
+                physical_resource_id=cr.PhysicalResourceId.of("MyEnvFromBlueprint")
+            )
+        )
+        env_cr.node.add_dependency(profile_cr)
