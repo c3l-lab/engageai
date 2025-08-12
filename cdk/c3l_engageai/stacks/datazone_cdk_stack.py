@@ -41,7 +41,11 @@ class DataZoneStack(core.Stack):
             bucket_name="engage-ai-dataset"
         )
         # kms_key = kms.Key(self, "DataZoneKey")
-        kms_key = 'arn:aws:kms:ap-southeast-2:184898280326:key/cfcbd85c-6eb3-47c4-b5e5-2dca0fce71c4'
+        kms_key = kms.Key.from_key_arn(
+            self, "ImportedKey",
+            "arn:aws:kms:ap-southeast-2:184898280326:key/cfcbd85c-6eb3-47c4-b5e5-2dca0fce71c4"
+        )
+
 
         # 2. Create Execution Role
         execution_role = create_datazone_execution_role(self, kms_key, bucket)
