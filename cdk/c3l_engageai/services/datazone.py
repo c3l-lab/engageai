@@ -71,31 +71,32 @@ def create_environment(
     return env.attr_id
 
 
-def create_s3_data_source(
-    scope: Construct,
-    domain_id: str,
-    environment_id: str,
-    project_id: str
-) -> str:  # return data source ID string
-    data_source = datazone.CfnDataSource(
-        scope, "S3DataSource",
-        domain_identifier=domain_id,
-        environment_identifier=environment_id,
-        name="direct-s3-data-source",
-        project_identifier=project_id,
-        type="S3",
-        description="Direct S3 data source for third-party data sharing",
-        configuration={},
-        enable_setting="ENABLED",
-        publish_on_import=False,
-        recommendation=datazone.CfnDataSource.RecommendationConfigurationProperty(
-            enable_business_name_generation=True
-        )
-    )
-    return data_source.attr_id
+# def create_s3_data_source(
+#     scope: Construct,
+#     domain_id: str,
+#     environment_id: str,
+#     project_id: str
+# ) -> str:  # return data source ID string
+#     data_source = datazone.CfnDataSource(
+#         scope, "S3DataSource",
+#         domain_identifier=domain_id,
+#         environment_identifier=environment_id,
+#         name="direct-s3-data-source",
+#         project_identifier=project_id,
+#         type="S3",
+#         description="Direct S3 data source for third-party data sharing",
+#         configuration={},
+#         enable_setting="ENABLED",
+#         publish_on_import=False,
+#         recommendation=datazone.CfnDataSource.RecommendationConfigurationProperty(
+#             enable_business_name_generation=True
+#         )
+#     )
+#     return data_source.attr_id
 
 def create_glue_data_source(
     scope: Construct,
+    execution_role: iam.IRole, 
     domain_id: str,
     environment_id: str,
     project_id: str
@@ -105,19 +106,58 @@ def create_glue_data_source(
         domain_identifier=domain_id,
         environment_identifier=environment_id,
         project_identifier=project_id,
-        name="glue-data-source",
-        description= "Glue catalog data source",
-        type="GLUE_CATALOG",  # Confirm the exact type string
-        configuration={
-            "GlueTable": {
-                "DatabaseName": "engage_ai glue database name",
-                "TableName": "engage_ai glue table name"
-            }
-        },
+        name="engage_ai_dataset",
+        description="Import existing Glue Data Catalog tables",
+        type="GLUE",  # must be "GLUE"
+        configuration=datazone.CfnDataSource.DataSourceConfigurationInputProperty(
+            glue_run_configuration=datazone.CfnDataSource.GlueRunConfigurationInputProperty(
+                catalog_name="AwsDataCatalog",
+                data_access_role=execution_role,
+                relational_filter_configurations=[
+                    datazone.CfnDataSource.RelationalFilterConfigurationProperty(
+                        database_name='engage_ai_dataset',
+                        filter_expressions=[
+                            datazone.CfnDataSource.FilterExpressionProperty(
+                                expression="*",
+                                type="INCLUDE",
+                            )
+                        ]
+                    )
+                ]
+            )
+        ),
         enable_setting="ENABLED",
         publish_on_import=False,
         recommendation=datazone.CfnDataSource.RecommendationConfigurationProperty(
             enable_business_name_generation=True
-        )
+        ),
+        # You can add a schedule if you want it to run periodically:
+        schedule=datazone.CfnDataSource.ScheduleConfigurationProperty(
+            schedule="cron(0 1 * * ? *)",
+            timezone="AUSTRALIA_MELBOURNE"
+        ),
     )
     return data_source.attr_id
+
+
+    # data_source = datazone.CfnDataSource(
+    #     scope, "GlueDataSource",
+    #     domain_identifier=domain_id,
+    #     environment_identifier=environment_id,
+    #     project_identifier=project_id,
+    #     name="enagge_ai_dataset",
+    #     description= "Glue catalog data source",
+    #     type="GLUE_CATALOG",  # Confirm the exact type string
+    #     configuration={
+    #         "GlueTable": {
+    #             "DatabaseName": "engage_ai glue database name",
+    #             "TableName": "engage_ai glue table name"
+    #         }
+    #     },
+    #     enable_setting="ENABLED",
+    #     publish_on_import=False,
+    #     recommendation=datazone.CfnDataSource.RecommendationConfigurationProperty(
+    #         enable_business_name_generation=True
+    #     )
+    # )
+    # return data_source.attr_id

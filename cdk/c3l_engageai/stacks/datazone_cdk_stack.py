@@ -39,12 +39,12 @@ class DataZoneFullStack(Stack):
             self, domain_id, project_id, env_profile_id
         )
 
-        s3_data_source_id = create_s3_data_source(
-            self, domain_id, environment_id, project_id
-        )
+        # s3_data_source_id = create_s3_data_source(
+        #     self, domain_id, environment_id, project_id
+        # )
 
         glue_data_source_id = create_glue_data_source(
-            self, domain_id, environment_id, project_id
+            self, execution_role, domain_id, environment_id, project_id
         )
 
         
