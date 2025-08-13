@@ -93,3 +93,31 @@ def create_s3_data_source(
         )
     )
     return data_source.attr_id
+
+def create_glue_data_source(
+    scope: Construct,
+    domain_id: str,
+    environment_id: str,
+    project_id: str
+) -> str:
+    data_source = datazone.CfnDataSource(
+        scope, "GlueDataSource",
+        domain_identifier=domain_id,
+        environment_identifier=environment_id,
+        project_identifier=project_id,
+        name="glue-data-source",
+        description= "Glue catalog data source",
+        type="GLUE_CATALOG",  # Confirm the exact type string
+        configuration={
+            "GlueTable": {
+                "DatabaseName": "engage_ai glue database name",
+                "TableName": "engage_ai glue table name"
+            }
+        },
+        enable_setting="ENABLED",
+        publish_on_import=False,
+        recommendation=datazone.CfnDataSource.RecommendationConfigurationProperty(
+            enable_business_name_generation=True
+        )
+    )
+    return data_source.attr_id
