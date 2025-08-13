@@ -2,21 +2,24 @@ from aws_cdk import (
     aws_datazone as datazone,
     aws_iam as iam,
     aws_s3 as s3,
+    aws_kms
 )
 from constructs import Construct
 from typing import Tuple
 
 
-def create_domain(scope: Construct, execution_role: iam.IRole) -> datazone.CfnDomain:
+def create_domain(
+        scope: Construct, 
+        execution_role: iam.IRole, 
+        kms_key: aws_kms.IKey) -> datazone.CfnDomain:
     domain = datazone.CfnDomain(
         scope, "EngageAiDataZoneDomain",
         name="engageai-datazone-domain",
         description="EngageAI data zone domain",
         domain_execution_role=execution_role.role_arn,
-        kms_key_identifier="alias/aws/datazone"
+        kms_key_identifier=kms_key.key_id
     )
     return domain
-
 
 def create_project(scope: Construct, domain: datazone.CfnDomain) -> datazone.CfnProject:
     project = datazone.CfnProject(

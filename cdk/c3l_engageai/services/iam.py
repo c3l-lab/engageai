@@ -94,22 +94,17 @@ def create_lambda_role(
         ]
     )
 
-from typing import Tuple
-
 def create_datazone_execution_role(
     scope: Construct,
-    branch,  # your Environment type
-    stack_name: str,
-    domain_execution_role_arn: str,
-    domain_kms_key_arn: str,
-    dz_provisioning_role_arn: str,
-    glue_manage_access_role_arn: str
-) -> Tuple[aws_iam.Role, aws_iam.IRole, aws_kms.IKey, aws_iam.IRole, aws_iam.IRole]:
+    construct_id: str,
+    branch: Environment
+) -> aws_iam.IRole:
   
     # --- Create the DataZone execution role ---
     execution_role = aws_iam.Role(
         scope,
-        f"{stack_name}-DataZoneExecutionRole",
+        construct_id,
+        role_name=resource_name("datazone-execution-role", branch),
         assumed_by=aws_iam.ServicePrincipal("datazone.amazonaws.com"),
         managed_policies=[
             aws_iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -121,24 +116,18 @@ def create_datazone_execution_role(
         ],
     )
 
-    # --- Import existing roles & KMS key ---
-    domain_execution_role = aws_iam.Role.from_role_arn(
-        scope, "DomainExecutionRole", domain_execution_role_arn
-    )
-    domain_kms_key = aws_kms.Key.from_key_arn(
-        scope, "DomainKmsKey", domain_kms_key_arn
-    )
-    dz_provisioning_role = aws_iam.Role.from_role_arn(
-        scope, "DzProvisioningRole", dz_provisioning_role_arn
-    )
-    glue_manage_access_role = aws_iam.Role.from_role_arn(
-        scope, "GlueManageAccessRole", glue_manage_access_role_arn
+    execution_role.add_to_policy(
+        aws_iam.PolicyStatement(
+            sid="KMSBasic",
+            effect=aws_iam.Effect.ALLOW,
+            actions=[
+                "kms:Decrypt",
+                "kms:Encrypt",
+                "kms:PutKeyPolicy",
+                "kms:GenerateDataKey",
+            ],
+            resources=["*"],
+        )
     )
 
-    return (
-        execution_role,
-        domain_execution_role,
-        domain_kms_key,
-        dz_provisioning_role,
-        glue_manage_access_role
-    )
+    return execution_role

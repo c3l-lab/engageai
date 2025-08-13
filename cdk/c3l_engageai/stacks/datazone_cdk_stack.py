@@ -4,7 +4,9 @@ from aws_cdk import aws_iam as iam
 
 from c3l_engageai.services.iam import create_datazone_execution_role
 from c3l_engageai.config import Environment
+from c3l_engageai.helpers import resource_name
 from c3l_engageai.services.secretsmanager import create_secrets
+from c3l_engageai.services.kms import create_datazone_kms
 from c3l_engageai.services.datazone import (
     create_domain,
     create_project,
@@ -15,7 +17,7 @@ from c3l_engageai.services.datazone import (
 
 
 class DataZoneFullStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, **kwargs):
+    def __init__(self, scope: Construct, construct_id: str, branch: Environment, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
         # execution_role = iam.Role(
@@ -27,18 +29,25 @@ class DataZoneFullStack(Stack):
         #     ]
         # )
 
-        execution_role= create_datazone_execution_role (self, )
-
-        # AWS Account and region (use your actual values or context)
-        account_id = self.account
-        region = self.region
-
+        datazone_kms = create_datazone_kms(self, resource_name("datazone_kms", branch), branch)
+        execution_role= create_datazone_execution_role (self, resource_name("datazone_execution_role", branch), branch)       
         # Call the service functions in order
-        domain = create_domain(self, execution_role)
+        domain = create_domain(self, execution_role, datazone_kms)
+
+
+        # =================================================
+        # Please modify the following code according to the code above
+
         project = create_project(self, domain)
         env_profile = create_environment_profile(self, domain, project, account_id, region)
         environment = create_environment(self, domain, project, env_profile)
         data_source = create_s3_data_source(self, domain, environment)
+        
+        
+        
+        # AWS Account and region (use your actual values or context)
+        account_id = self.account
+        region = self.region
 
         # (Optional) expose as attributes if you want to reference them later
         self.domain = domain
