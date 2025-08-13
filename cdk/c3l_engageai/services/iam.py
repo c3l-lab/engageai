@@ -94,17 +94,19 @@ def create_lambda_role(
         ]
     )
 
+from aws_cdk import aws_iam
+from constructs import Construct
+
 def create_datazone_execution_role(
     scope: Construct,
     construct_id: str,
-    branch: Environment
+    branch: str
 ) -> aws_iam.IRole:
   
-    # --- Create the DataZone execution role ---
     execution_role = aws_iam.Role(
         scope,
         construct_id,
-        role_name=resource_name("datazone-execution-role", branch),
+        role_name=f"datazone-execution-role-{branch}",
         assumed_by=aws_iam.ServicePrincipal("datazone.amazonaws.com"),
         managed_policies=[
             aws_iam.ManagedPolicy.from_aws_managed_policy_name(
@@ -116,6 +118,7 @@ def create_datazone_execution_role(
         ],
     )
 
+    # --- KMS Permissions ---
     execution_role.add_to_policy(
         aws_iam.PolicyStatement(
             sid="KMSBasic",
@@ -130,4 +133,85 @@ def create_datazone_execution_role(
         )
     )
 
+    # --- DataZone Management Permissions ---
+    execution_role.add_to_policy(
+        aws_iam.PolicyStatement(
+            sid="DataZoneManageEnv",
+            effect=aws_iam.Effect.ALLOW,
+            actions=[
+                "datazone:CreateEnvironment",
+                "datazone:GetEnvironment",
+                "datazone:ListEnvironments",
+                "datazone:CreateEnvironmentProfile",
+                "datazone:GetEnvironmentProfile",
+                "datazone:ListEnvironmentProfiles",
+                "datazone:UpdateEnvironment",
+                "datazone:UpdateEnvironmentProfile",
+                "datazone:DeleteEnvironment",
+                "datazone:DeleteEnvironmentProfile",
+            ],
+            resources=["*"],
+        )
+    )
+
+    # --- Glue + Lake Formation Permissions ---
+    execution_role.add_to_policy(
+        aws_iam.PolicyStatement(
+            sid="GlueLakeFormationAccess",
+            effect=aws_iam.Effect.ALLOW,
+            actions=[
+                "glue:GetDatabase",
+                "glue:GetDatabases",
+                "glue:GetTable",
+                "glue:GetTables",
+                "glue:SearchTables",
+                "lakeformation:GetDataAccess",
+                "lakeformation:GrantPermissions",
+                "lakeformation:RevokePermissions",
+                "lakeformation:GetResourceLFTags",
+                "lakeformation:ListResources",
+            ],
+            resources=["*"],
+        )
+    )
+
     return execution_role
+
+
+# def create_datazone_execution_role(
+#     scope: Construct,
+#     construct_id: str,
+#     branch: Environment
+# ) -> aws_iam.IRole:
+  
+#     # --- Create the DataZone execution role ---
+#     execution_role = aws_iam.Role(
+#         scope,
+#         construct_id,
+#         role_name=resource_name("datazone-execution-role", branch),
+#         assumed_by=aws_iam.ServicePrincipal("datazone.amazonaws.com"),
+#         managed_policies=[
+#             aws_iam.ManagedPolicy.from_aws_managed_policy_name(
+#                 "AmazonS3FullAccess"
+#             ),
+#             aws_iam.ManagedPolicy.from_aws_managed_policy_name(
+#                 "service-role/AWSGlueServiceRole"
+#             ),
+#         ],
+#     )
+
+#     execution_role.add_to_policy(
+#         aws_iam.PolicyStatement(
+#             sid="KMSBasic",
+#             effect=aws_iam.Effect.ALLOW,
+#             actions=[
+#                 "kms:Decrypt",
+#                 "kms:Encrypt",
+#                 "kms:PutKeyPolicy",
+#                 "kms:GenerateDataKey",
+#             ],
+#             resources=["*"],
+#         )
+#     )
+
+#     return execution_role
