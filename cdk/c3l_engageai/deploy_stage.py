@@ -3,7 +3,7 @@ import os
 # from aws_cdk import Duration, Environment, Stage
 from constructs import Construct
 
-from c3l_engageai.config import Environment, config 
+from c3l_engageai.config import Environment, config, AwsAccount
 from c3l_engageai.helpers import resource_name
 
 from c3l_engageai.stacks.secrets import Secrets
@@ -11,7 +11,7 @@ from c3l_engageai.stacks.datazone_cdk_stack import DataZoneFullStack
 
 class DeployStage(aws_cdk.Stage):
     def __init__(
-        self, scope: Construct, id: str, branch: Environment, **kwargs
+        self, scope: Construct, id: str, branch: Environment, account:AwsAccount,**kwargs
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -37,6 +37,7 @@ class DeployStage(aws_cdk.Stage):
         datazonefullstack= DataZoneFullStack(
             self,
             construct_id=construct_id,
+            account = account,
             branch=branch,
             env=env
         )
