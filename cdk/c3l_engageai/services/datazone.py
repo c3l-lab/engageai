@@ -46,7 +46,7 @@ def create_environment_profile(
         name="data-lake-profile",
         description="Environment profile for data lake operations",
         project_identifier=project_id,
-        aws_account_id= config.environment_accounts[branch].id
+        aws_account_id= config.environment_accounts[branch].id,
         aws_account_region= config.environment_accounts[branch].region
     )
     return profile.attr_id
