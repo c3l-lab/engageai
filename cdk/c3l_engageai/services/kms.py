@@ -18,7 +18,7 @@ def create_datazone_kms(scope: Construct, construct_id: str, branch: Environment
     # Create KMS key for encryption
     return  kms.Key(
         scope, construct_id,
-        kms__name=resource_name("datazone_kms", branch),
+        kms_name=resource_name("datazone_kms", branch),
         description="KMS key for DataZone encryption",
         enable_key_rotation=True,
         removal_policy=RemovalPolicy.DESTROY
