@@ -1,6 +1,7 @@
 from aws_cdk import (
     aws_datazone as datazone,
     aws_iam as iam,
+    aws_kms,
     aws_s3 as s3,
     aws_kms
 )
