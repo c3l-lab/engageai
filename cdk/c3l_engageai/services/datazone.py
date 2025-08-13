@@ -52,7 +52,6 @@ def create_environment_profile(
     return profile.attr_id
 
 
-
 def create_environment(
     scope: Construct,
     domain_id: str,

@@ -31,10 +31,9 @@ class DataZoneFullStack(Stack):
         
         project_id = create_project(self, domain_id)
         env_profile_id = create_environment_profile(
-            self, domain_id, project_id,
-            aws_account_id=config.deployment_account.id,
-            aws_account_region=config.deployment_account.region
+            self, domain_id, project_id
         )
+
         environment_id = create_environment(
             self, domain_id, project_id, env_profile_id
         )
