@@ -7,7 +7,7 @@ from c3l_engageai.config import Environment, config
 from c3l_engageai.helpers import resource_name
 
 from c3l_engageai.stacks.secrets import Secrets
-from c3l_engageai.stacks.datapipeline import Datapipeline
+from cdk.c3l_engageai.stacks.try_datapipeline import Datapipeline
 from c3l_engageai.stacks.datazone_cdk_stack import DataZoneFullStack
 
 class DeployStage(aws_cdk.Stage):
@@ -42,20 +42,4 @@ class DeployStage(aws_cdk.Stage):
             env=env
         )
         datazonefullstack.add_dependency(secrets_stack)
-
-
-
-
-#     DataZoneDomainStack(
-#     scope=app,
-#     id="DataZoneDomainStack",
-#     domain_execution_role_arn=DOMAIN_EXECUTION_ROLE_ARN,
-#     domain_kms_key_arn=DOMAIN_KMS_KEY_ARN,
-#     domain_name=DOMAIN_NAME,
-#     env=cdk.Environment(
-#         account=os.getenv("CDK_DEFAULT_ACCOUNT"),
-#         region=os.getenv("CDK_DEFAULT_REGION", "ap-southeast-2")
-#     )
-# )
-
 
