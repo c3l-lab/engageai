@@ -16,8 +16,8 @@ Pipeline(
     f"{config.project_name}-pipeline-anl",
     "anl",
     env=deployment_environment,
+    account=config.deployment_account.id
 )
 
 app.synth()
-
 
