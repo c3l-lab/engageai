@@ -97,4 +97,4 @@ class Pipeline(Stack):
 
         # Deploy our infrastructure
         deploy_wave = pipeline.add_wave("Deploy")
-        deploy_wave.add_stage(DeployStage(self, "Deploy", account= account, branch=branch))
+        deploy_wave.add_stage(DeployStage(self, "Deploy", branch=branch))

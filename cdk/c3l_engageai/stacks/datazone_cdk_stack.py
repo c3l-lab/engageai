@@ -3,7 +3,7 @@ from constructs import Construct
 from aws_cdk import aws_iam as iam
 
 from c3l_engageai.services.iam import create_datazone_execution_role
-from c3l_engageai.config import Environment, AwsAccount
+from c3l_engageai.config import Environment, config
 from c3l_engageai.helpers import resource_name
 from c3l_engageai.services.secretsmanager import create_secrets
 from c3l_engageai.services.kms import create_datazone_kms
@@ -17,7 +17,7 @@ from c3l_engageai.services.datazone import (
 
 
 class DataZoneFullStack(Stack):
-    def __init__(self, scope: Construct, construct_id: str, account: AwsAccount, branch: Environment, **kwargs):
+    def __init__(self, scope: Construct, construct_id: str, branch: Environment, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
         datazone_kms = create_datazone_kms(self, resource_name("datazone_kms", branch), branch)
@@ -32,8 +32,8 @@ class DataZoneFullStack(Stack):
         project_id = create_project(self, domain_id)
         env_profile_id = create_environment_profile(
             self, domain_id, project_id,
-            aws_account_id=account.id,
-            aws_account_region=account.region
+            aws_account_id=config.deployment_account.id,
+            aws_account_region=config.deployment_account.region
         )
         environment_id = create_environment(
             self, domain_id, project_id, env_profile_id

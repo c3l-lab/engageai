@@ -6,6 +6,7 @@ from aws_cdk import (
     aws_kms
 )
 from constructs import Construct
+from c3l_engageai.config import Environment, config
 from typing import Tuple
 
 
@@ -36,8 +37,7 @@ def create_environment_profile(
     scope: Construct,
     domain_id: str,
     project_id: str,
-    aws_account_id: str,
-    aws_account_region: str
+    branch: Environment
 ) -> str:  # return environment profile ID string
     profile = datazone.CfnEnvironmentProfile(
         scope, "DataZoneEnvironmentProfile",
@@ -46,8 +46,8 @@ def create_environment_profile(
         name="data-lake-profile",
         description="Environment profile for data lake operations",
         project_identifier=project_id,
-        aws_account_id=aws_account_id,
-        aws_account_region=aws_account_region
+        aws_account_id= config.environment_accounts[branch].id
+        aws_account_region= config.environment_accounts[branch].region
     )
     return profile.attr_id
 
