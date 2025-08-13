@@ -12,7 +12,6 @@ from c3l_engageai.services.datazone import (
     create_project,
     create_environment_profile,
     create_environment,
-    create_s3_data_source,
     create_glue_data_source
 )
 
