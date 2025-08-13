@@ -19,7 +19,7 @@ def create_domain(
         name="engageai-datazone-domain",
         description="EngageAI data zone domain",
         domain_execution_role=execution_role.role_arn,
-        kms_key_identifier=kms_key.key_id
+        kms_key_identifier=kms_key.key_arn
     )
     return domain.attr_id
 
