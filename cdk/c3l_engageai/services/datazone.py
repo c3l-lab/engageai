@@ -96,7 +96,7 @@ def create_environment(
 
 def create_glue_data_source(
     scope: Construct,
-    execution_role: iam.IRole, 
+    execution_role:iam.IRole, 
     domain_id: str,
     environment_id: str,
     project_id: str
@@ -112,7 +112,7 @@ def create_glue_data_source(
         configuration=datazone.CfnDataSource.DataSourceConfigurationInputProperty(
             glue_run_configuration=datazone.CfnDataSource.GlueRunConfigurationInputProperty(
                 catalog_name="AwsDataCatalog",
-                data_access_role=execution_role,
+                data_access_role=execution_role.role_arn,
                 relational_filter_configurations=[
                     datazone.CfnDataSource.RelationalFilterConfigurationProperty(
                         database_name='engage_ai_dataset',
