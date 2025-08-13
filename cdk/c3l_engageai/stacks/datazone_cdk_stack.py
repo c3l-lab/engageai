@@ -31,12 +31,13 @@ class DataZoneFullStack(Stack):
         
         project_id = create_project(self, domain_id)
         env_profile_id = create_environment_profile(
-            self, domain_id, project_id
+            self, domain_id, project_id, branch
         )
 
         environment_id = create_environment(
             self, domain_id, project_id, env_profile_id
         )
+        
         data_source_id = create_s3_data_source(
             self, domain_id, environment_id, project_id
         )
