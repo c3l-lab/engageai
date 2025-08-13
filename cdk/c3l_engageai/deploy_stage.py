@@ -7,7 +7,6 @@ from c3l_engageai.config import Environment, config
 from c3l_engageai.helpers import resource_name
 
 from c3l_engageai.stacks.secrets import Secrets
-from cdk.c3l_engageai.stacks.try_datapipeline import Datapipeline
 from c3l_engageai.stacks.datazone_cdk_stack import DataZoneFullStack
 
 class DeployStage(aws_cdk.Stage):
