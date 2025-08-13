@@ -8,7 +8,7 @@ from aws_cdk import (
 )
 from constructs import Construct
 
-from .config import Environment, config
+from .config import Environment, config, AwsAccount
 from .deploy_stage import DeployStage
 from .helpers import resource_name
 
@@ -20,7 +20,7 @@ class Pipeline(Stack):
     """
 
     def __init__(
-        self, scope: Construct, id: str, branch: Environment, **kwargs
+        self, scope: Construct, id: str, branch: Environment, account:  AwsAccount,**kwargs
     ) -> None:
         super().__init__(scope, id, **kwargs)
 
@@ -97,4 +97,4 @@ class Pipeline(Stack):
 
         # Deploy our infrastructure
         deploy_wave = pipeline.add_wave("Deploy")
-        deploy_wave.add_stage(DeployStage(self, "Deploy", branch=branch))
+        deploy_wave.add_stage(DeployStage(self, "Deploy", account= account, branch=branch))
