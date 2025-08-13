@@ -1,5 +1,4 @@
 from aws_cdk import (
-    core,
     aws_s3,
     aws_iam as iam,
     aws_lambda as _lambda,

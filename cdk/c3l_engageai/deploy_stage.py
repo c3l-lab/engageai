@@ -34,13 +34,6 @@ class DeployStage(aws_cdk.Stage):
             env=env,
         )
 
-        datapipeline_stack = Datapipeline(
-            self, 
-            resource_name("datapipeline-stack", branch), 
-            branch=branch, 
-            env=env)
-        datapipeline_stack.add_dependency(secrets_stack)
-        
         construct_id = resource_name("datazone-full-stack", branch)
         datazonefullstack= DataZoneFullStack(
             self,
@@ -48,6 +41,7 @@ class DeployStage(aws_cdk.Stage):
             branch=branch,
             env=env
         )
+        datazonefullstack.add_dependency(secrets_stack)
 
 
 
