@@ -184,14 +184,6 @@ def create_datazone_execution_role(
     construct_id: str,
     branch: str
 ) -> iam.IRole:
-    iam.CfnServiceLinkedRole(
-        scope,
-        "DataZoneServiceLinkedRole",
-        aws_service_name="datazone.amazonaws.com",
-        description="Service-linked role required for AWS DataZone"
-    )
-
-    # 2️⃣ Create the DataZone execution role
     execution_role = iam.Role(
         scope,
         construct_id,
