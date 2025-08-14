@@ -9,6 +9,7 @@ from c3l_engageai.services.secretsmanager import create_secrets
 from c3l_engageai.services.kms import create_datazone_kms
 from c3l_engageai.services.datazone import (
     create_domain,
+    create_environment_blueprint,
     create_project,
     create_environment_profile,
     create_environment,
@@ -25,13 +26,14 @@ class DataZoneFullStack(Stack):
         # Call the service functions in order
         domain_id = create_domain(self, execution_role, datazone_kms)
 
+        blueprint_id = create_environment_blueprint(self, domain_id, execution_role)
 
         # =================================================
         # Please modify the following code according to the code above
         
         project_id = create_project(self, domain_id)
         env_profile_id = create_environment_profile(
-            self, domain_id, project_id, branch
+            self, domain_id, project_id, blueprint_id, branch
         )
 
         environment_id = create_environment(
