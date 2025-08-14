@@ -30,23 +30,24 @@ def create_domain(
         domain_identifier=domain.attr_id,  # replace with your DataZone domain ID
         environment_blueprint_identifier="DefaultDataLake",
         enabled_regions=["ap-southeast-2"],  # example region
-        provisioning_role_arn=execution_role.role_arn,
+        provisioning_role_arn=execution_role.role_arn
+        # ,
         # Optional: environment role permission boundary
         # environment_role_permission_boundary="arn:aws:iam::123456789012:policy/YourBoundaryPolicy",
         # Optional: manage access role ARN
         # manage_access_role_arn="arn:aws:iam::123456789012:role/YourManageAccessRole",
         # Optional: Lake Formation provisioning config
-        provisioning_configurations=[
-            datazone.CfnEnvironmentBlueprintConfiguration.ProvisioningConfigurationProperty(
-                lake_formation_configuration=datazone.CfnEnvironmentBlueprintConfiguration.LakeFormationConfigurationProperty(
-                    location_registration_exclude_s3_locations=[
+        # provisioning_configurations=[
+        #     datazone.CfnEnvironmentBlueprintConfiguration.ProvisioningConfigurationProperty(
+        #         lake_formation_configuration=datazone.CfnEnvironmentBlueprintConfiguration.LakeFormationConfigurationProperty(
+        #             location_registration_exclude_s3_locations=[
                  
-                    ],
-                    location_registration_role=execution_role.role_arn
+        # #             ],
+        #             location_registration_role=execution_role.role_arn
                 )
-            )
-        ]
-    )
+    #         )
+    #     ]
+    # )
     return domain.attr_id
 
 def create_project(scope: Construct, domain_id: str) -> str:  # return project ID string
