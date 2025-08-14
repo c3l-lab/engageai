@@ -22,33 +22,29 @@ def create_domain(
         kms_key_identifier=kms_key.key_arn
     )
     
+    return domain.attr_id
+
+def create_environment_blueprint(
+        scope: Construct,
+        domain_id: str,
+        execution_role: iam.IRole
+    ) -> str:
+    
+    blueprint_id = "engageai-blueprint-configuration"
+    
     # --- Create Environment Blueprint ---
-        # --- Blueprint Configuration ---
     blueprint = datazone.CfnEnvironmentBlueprintConfiguration(
         scope,
-        "MyBlueprintConfiguration",
-        domain_identifier=domain.attr_id,  # replace with your DataZone domain ID
+        blueprint_id,
+        domain_identifier=domain_id,  # replace with your DataZone domain ID
         environment_blueprint_identifier="DefaultDataLake",
         enabled_regions=["ap-southeast-2"],  # example region
-        provisioning_role_arn=execution_role.role_arn
-        # ,
-        # Optional: environment role permission boundary
-        # environment_role_permission_boundary="arn:aws:iam::123456789012:policy/YourBoundaryPolicy",
-        # Optional: manage access role ARN
-        # manage_access_role_arn="arn:aws:iam::123456789012:role/YourManageAccessRole",
-        # Optional: Lake Formation provisioning config
-        # provisioning_configurations=[
-        #     datazone.CfnEnvironmentBlueprintConfiguration.ProvisioningConfigurationProperty(
-        #         lake_formation_configuration=datazone.CfnEnvironmentBlueprintConfiguration.LakeFormationConfigurationProperty(
-        #             location_registration_exclude_s3_locations=[
-                 
-        # #             ],
-        #             location_registration_role=execution_role.role_arn
-                )
-    #         )
-    #     ]
-    # )
-    return domain.attr_id
+        provisioning_role_arn=execution_role.role_arn,
+        manage_access_role_arn=execution_role.role_arn
+    )
+    
+    return blueprint_id
+        
 
 def create_project(scope: Construct, domain_id: str) -> str:  # return project ID string
     project = datazone.CfnProject(
@@ -64,6 +60,7 @@ def create_environment_profile(
     scope: Construct,
     domain_id: str,
     project_id: str,
+    blueprint_id: str,
     branch: Environment
 ) -> str:  # return environment profile ID string
     profile = datazone.CfnEnvironmentProfile(
@@ -72,7 +69,7 @@ def create_environment_profile(
         name="data-lake-profile",
         description="Environment profile for data lake operations",
         project_identifier=project_id,
-        environment_blueprint_identifier="DefaultDataLake",
+        environment_blueprint_identifier=blueprint_id,
         aws_account_id= config.environment_accounts[branch].id,
         aws_account_region= config.environment_accounts[branch].region
     )
