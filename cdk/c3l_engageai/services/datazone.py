@@ -69,15 +69,15 @@ def create_environment_profile(
     profile = datazone.CfnEnvironmentProfile(
         scope, "DataZoneEnvironmentProfile",
         domain_identifier=domain_id,
-        environment_blueprint_identifier="DefaultDataLake",
         name="data-lake-profile",
         description="Environment profile for data lake operations",
         project_identifier=project_id,
-        blueprint_identifier=blueprint_attr_id,
+        environment_blueprint_identifier=blueprint_attr_id,
         aws_account_id= config.environment_accounts[branch].id,
         aws_account_region= config.environment_accounts[branch].region
     )
     return profile.attr_id
+
 
 
 def create_environment(
@@ -85,6 +85,8 @@ def create_environment(
     domain_id: str,
     project_id: str,
     environment_profile_id: str,
+    branch: Environment,
+    execution_role: iam.IRole, 
     name: str = "production-data-environment",
     description: str = "Production environment for engage_ai data operations"
 ) -> str: 
@@ -94,10 +96,12 @@ def create_environment(
         environment_profile_identifier=environment_profile_id,
         name=name,
         description=description,
-        project_identifier=project_id
+        project_identifier=project_id,
+        environment_account_identifier=config.environment_accounts[branch].id,
+        environment_account_region=config.environment_accounts[branch].region,
+        environment_role_arn= execution_role.role_arn
     )
     return env.attr_id
-
 
 # def create_s3_data_source(
 #     scope: Construct,
