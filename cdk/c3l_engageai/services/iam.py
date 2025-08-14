@@ -138,18 +138,7 @@ def create_datazone_execution_role(
         aws_iam.PolicyStatement(
             sid="DataZoneManageEnv",
             effect=aws_iam.Effect.ALLOW,
-            actions=[
-                "datazone:CreateEnvironment",
-                "datazone:GetEnvironment",
-                "datazone:ListEnvironments",
-                "datazone:CreateEnvironmentProfile",
-                "datazone:GetEnvironmentProfile",
-                "datazone:ListEnvironmentProfiles",
-                "datazone:UpdateEnvironment",
-                "datazone:UpdateEnvironmentProfile",
-                "datazone:DeleteEnvironment",
-                "datazone:DeleteEnvironmentProfile",
-            ],
+            actions=["datazone:*"],
             resources=["*"],
         )
     )
@@ -159,87 +148,6 @@ def create_datazone_execution_role(
         aws_iam.PolicyStatement(
             sid="GlueLakeFormationAccess",
             effect=aws_iam.Effect.ALLOW,
-            actions=[
-                "glue:GetDatabase",
-                "glue:GetDatabases",
-                "glue:GetTable",
-                "glue:GetTables",
-                "glue:SearchTables",
-                "lakeformation:GetDataAccess",
-                "lakeformation:GrantPermissions",
-                "lakeformation:RevokePermissions",
-                "lakeformation:GetResourceLFTags",
-                "lakeformation:ListResources",
-            ],
-            resources=["*"],
-        )
-    )
-
-    return execution_role
-from aws_cdk import aws_iam as iam
-from constructs import Construct
-
-def create_datazone_execution_role(
-    scope: Construct,
-    construct_id: str,
-    branch: str
-) -> iam.IRole:
-    execution_role = iam.Role(
-        scope,
-        construct_id,
-        role_name=f"datazone-execution-role-{branch}",
-        assumed_by=iam.ServicePrincipal("datazone.amazonaws.com"),
-        managed_policies=[
-            iam.ManagedPolicy.from_aws_managed_policy_name(
-                "AmazonS3FullAccess"
-            ),
-            iam.ManagedPolicy.from_aws_managed_policy_name(
-                "service-role/AWSGlueServiceRole"
-            ),
-        ],
-    )
-
-    # --- KMS Permissions ---
-    execution_role.add_to_policy(
-        iam.PolicyStatement(
-            sid="KMSBasic",
-            effect=iam.Effect.ALLOW,
-            actions=[
-                "kms:Decrypt",
-                "kms:Encrypt",
-                "kms:PutKeyPolicy",
-                "kms:GenerateDataKey",
-            ],
-            resources=["*"],
-        )
-    )
-
-    # --- DataZone Management Permissions ---
-    execution_role.add_to_policy(
-        iam.PolicyStatement(
-            sid="DataZoneManageEnv",
-            effect=iam.Effect.ALLOW,
-            actions=[
-                "datazone:CreateEnvironment",
-                "datazone:GetEnvironment",
-                "datazone:ListEnvironments",
-                "datazone:CreateEnvironmentProfile",
-                "datazone:GetEnvironmentProfile",
-                "datazone:ListEnvironmentProfiles",
-                "datazone:UpdateEnvironment",
-                "datazone:UpdateEnvironmentProfile",
-                "datazone:DeleteEnvironment",
-                "datazone:DeleteEnvironmentProfile",
-            ],
-            resources=["*"],
-        )
-    )
-
-    # --- Glue + Lake Formation Permissions ---
-    execution_role.add_to_policy(
-        iam.PolicyStatement(
-            sid="GlueLakeFormationAccess",
-            effect=iam.Effect.ALLOW,
             actions=[
                 "glue:GetDatabase",
                 "glue:GetDatabases",
