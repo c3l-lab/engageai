@@ -46,8 +46,8 @@ def create_domain(
                 )
             )
         ]
-
-    return domain.attr_id, blueprint.attr_id
+    )
+    return domain.attr_id
 
 def create_project(scope: Construct, domain_id: str) -> str:  # return project ID string
     project = datazone.CfnProject(
@@ -63,8 +63,7 @@ def create_environment_profile(
     scope: Construct,
     domain_id: str,
     project_id: str,
-    branch: Environment,
-    blueprint_attr_id: str
+    branch: Environment
 ) -> str:  # return environment profile ID string
     profile = datazone.CfnEnvironmentProfile(
         scope, "DataZoneEnvironmentProfile",
@@ -72,7 +71,7 @@ def create_environment_profile(
         name="data-lake-profile",
         description="Environment profile for data lake operations",
         project_identifier=project_id,
-        environment_blueprint_identifier=blueprint_attr_id,
+        environment_blueprint_identifier="DefaultDataLake",
         aws_account_id= config.environment_accounts[branch].id,
         aws_account_region= config.environment_accounts[branch].region
     )

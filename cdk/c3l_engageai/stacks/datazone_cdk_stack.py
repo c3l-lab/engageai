@@ -23,7 +23,7 @@ class DataZoneFullStack(Stack):
         datazone_kms = create_datazone_kms(self, resource_name("datazone_kms", branch), branch)
         execution_role= create_datazone_execution_role (self, resource_name("datazone_execution_role", branch), branch)       
         # Call the service functions in order
-        domain_id, blueprint_attr_id = create_domain(self, execution_role, datazone_kms)
+        domain_id = create_domain(self, execution_role, datazone_kms)
 
 
         # =================================================
@@ -31,7 +31,7 @@ class DataZoneFullStack(Stack):
         
         project_id = create_project(self, domain_id)
         env_profile_id = create_environment_profile(
-            self, domain_id, project_id, branch, blueprint_attr_id
+            self, domain_id, project_id, branch
         )
 
         environment_id = create_environment(
