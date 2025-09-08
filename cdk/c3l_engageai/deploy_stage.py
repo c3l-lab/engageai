@@ -33,7 +33,8 @@ class DeployStage(aws_cdk.Stage):
             env=env,
         )
 
-        construct_id = resource_name("datazone-full-stack", branch)
+        # construct_id = resource_name("datazone-full-stack", branch)
+        construct_id = resource_name("engageai-submission-full-stack", branch)
         datazonefullstack= DataZoneFullStack(
             self,
             construct_id=construct_id,
