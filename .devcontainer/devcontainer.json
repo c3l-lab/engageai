@@ -1,0 +1,80 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/alpine
+{
+	"name": "c3l",
+	"dockerComposeFile": "docker-compose.yml",
+	// Core dev container service to start up
+	"service": "engageai",
+	// Additional services we want started alongside the dev container
+	// "runServices": ["dynamodb"],
+
+	"updateRemoteUserUID": true,
+	"privileged": true,
+
+	"remoteUser": "${localEnv:USER:developer}",
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [
+		8000, // api_testlab
+		8001, // api_private
+		8080  // web_testlab
+	],
+
+	"workspaceFolder": "${localWorkspaceFolder}",
+	// "mounts": [
+	// 	"type=bind,source=${localWorkspaceFolder},target=${localWorkspaceFolder}",
+	// 	"type=volume,source=mas-home,target=/home/${localEnv:USER:developer}",
+	// 	"type=bind,source=/home/${localEnv:USER:developer}/.aws/,target=/home/${localEnv:USER:developer}/.aws/"
+	// ],
+
+	"mounts": [
+    // Mount your workspace folder as-is
+    "type=bind,source=${localWorkspaceFolder},target=${localWorkspaceFolder}",
+
+    // Mount a volume for your container’s home directory (optional)
+    // "type=volume,source=mas-home,target=/home/${localEnv:USER}",
+
+    // Mount your AWS config safely via the new shared folder
+    "type=bind,source=/Users/${localEnv:USER}/.aws,target=/home/${localEnv:USER}/.aws"
+	],
+
+
+
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:2": {
+			"username": "${localEnv:USER:developer}",
+			"userUid": 1000,
+			"userGid": 1000,
+			"installOhMyZshConfig": true,
+			"installOhMyZsh": true,
+			"installZsh": true
+		},
+		"./docker-outside-of-docker": {
+			"moby": false
+		}
+	},
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"ms-python.debugpy",
+				"Vue.volar",
+				"ms-azuretools.vscode-docker"
+			],
+			"settings": {
+				"python.terminal.activateEnvironment": false,
+				"python.testing.pytestEnabled": false
+			}
+		}	
+	},
+	"postCreateCommand": {
+		// "install-dependencies": "cd ${localWorkspaceFolder}; make install -j 1"
+	},
+	"postStartCommand": {
+		"setup-zsh": ["sed",  "-i", "-e", "s/ZSH_THEME=.*/ZSH_THEME='bira'/g", "/home/${localEnv:USER:developer}/.zshrc"]
+	},
+	// "postAttachCommand": {
+	// 	"fix-permissions": "chmod +0070 -R /home/${localEnv:USER:developer}"
+	// }
+}

@@ -4,6 +4,8 @@ import pandas as pd
 from io import StringIO
 from dotenv import load_dotenv
 
+
+
 def read_csv_s3(bucket: str, key: str) -> pd.DataFrame:
     """Read CSV file from S3 and return as DataFrame."""
     load_dotenv()
@@ -23,6 +25,40 @@ def read_csv_s3(bucket: str, key: str) -> pd.DataFrame:
     body = csv_obj["Body"].read().decode("utf-8")
     df = pd.read_csv(StringIO(body))
     return df
+
+# def convert_to_datetime(column_name: str, df: pd.DataFrame = None, unit: str = 's', tz: str = None) -> pd.DataFrame:
+#     target_df = df if df is not None else self.merged_df
+#     if target_df is None or target_df.empty:
+#         return pd.DataFrame()  # return empty DF if no data
+#     if column_name not in target_df.columns:
+#         raise ValueError(f"Column '{column_name}' not found in DataFrame.")
+#     target_df[column_name] = pd.to_datetime(target_df[column_name], unit=unit, errors='coerce', utc=True)
+#     if tz:
+#         target_df[column_name] = target_df[column_name].dt.tz_convert(tz)
+#     return target_df
+
+
+def convert_to_datetime(column_name: str, df: pd.DataFrame = None, fmt: str = "%d/%m/%Y %H:%M", tz: str = None) -> pd.DataFrame:
+    target_df = df if df is not None else self.merged_df
+    if target_df is None or target_df.empty:
+        return pd.DataFrame()  # return empty DF if no data
+    if column_name not in target_df.columns:
+        raise ValueError(f"Column '{column_name}' not found in DataFrame.")
+
+    # Parse with string format
+    target_df[column_name] = pd.to_datetime(
+        target_df[column_name],
+        format=fmt,
+        errors="coerce",
+        utc=True
+    )
+
+    # Convert timezone if provided
+    if tz:
+        target_df[column_name] = target_df[column_name].dt.tz_convert(tz)
+
+    return target_df
+
 
 
 def add_section(html_sections: list, title: str, content: str, start=None, end=None, include_dates=False):

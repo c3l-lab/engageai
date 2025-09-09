@@ -6,7 +6,7 @@ from datetime import datetime
 # Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.common.readcsv_writehtml import read_csv_s3, write_html, add_section, save_html_s3
+from src.common.readcsv_writehtml import read_csv_s3, write_html, add_section, save_html_s3, convert_to_datetime
 from src.service.assessment import AssessmentService
 
 ######## Config ########
@@ -19,11 +19,11 @@ file_log_name = "engageai_weekly_assessment/testing_subtime_20250714_0721.csv"
 ######## Read CSV File ########
 df_duedate = read_csv_s3(bucket, file_duedate_name)
 df_log = read_csv_s3(bucket, file_log_name)
+df_duedate = convert_to_datetime(column_name="duedate", df=df_duedate, tz="Australia/Adelaide")
 
 ######## Service ########
 service = AssessmentService(df_duedate, df_log)
 
-df_duedate = service.convert_to_datetime("duedate", df=df_duedate, tz="Australia/Adelaide")
 df_duedate = service.get_latest_due_date(df=df_duedate)
 df_duedate = df_duedate.sort_values(['duedate', 'cmid']).reset_index(drop=True)
 

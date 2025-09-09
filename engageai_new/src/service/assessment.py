@@ -364,6 +364,8 @@
 
 import pandas as pd
 from src.models import assessment
+from src.common.readcsv_writehtml import convert_to_datetime
+
 
 class AssessmentService:
     def __init__(self, assessment: pd.DataFrame, submissions: pd.DataFrame):
@@ -372,16 +374,16 @@ class AssessmentService:
         self.merged_df = None  # Will hold combined assessment + submissions later
 
     ######### convert to datetime function ##############################################################################
-    def convert_to_datetime(self, column_name: str, df: pd.DataFrame = None, unit: str = 's', tz: str = None) -> pd.DataFrame:
-        target_df = df if df is not None else self.merged_df
-        if target_df is None or target_df.empty:
-            return pd.DataFrame()  # return empty DF if no data
-        if column_name not in target_df.columns:
-            raise ValueError(f"Column '{column_name}' not found in DataFrame.")
-        target_df[column_name] = pd.to_datetime(target_df[column_name], unit=unit, errors='coerce', utc=True)
-        if tz:
-            target_df[column_name] = target_df[column_name].dt.tz_convert(tz)
-        return target_df
+    # def convert_to_datetime(self, column_name: str, df: pd.DataFrame = None, unit: str = 's', tz: str = None) -> pd.DataFrame:
+    #     target_df = df if df is not None else self.merged_df
+    #     if target_df is None or target_df.empty:
+    #         return pd.DataFrame()  # return empty DF if no data
+    #     if column_name not in target_df.columns:
+    #         raise ValueError(f"Column '{column_name}' not found in DataFrame.")
+    #     target_df[column_name] = pd.to_datetime(target_df[column_name], unit=unit, errors='coerce', utc=True)
+    #     if tz:
+    #         target_df[column_name] = target_df[column_name].dt.tz_convert(tz)
+    #     return target_df
     
 # ######### every semester duedate function #################################################### 
     
@@ -424,7 +426,7 @@ class AssessmentService:
         df_log: pd.DataFrame,
     ) -> pd.DataFrame:
         # Always convert 'time' column in logs
-        df_log = self.convert_to_datetime(
+        df_log = convert_to_datetime(
             column_name="time",
             df=df_log,
             unit="s",
