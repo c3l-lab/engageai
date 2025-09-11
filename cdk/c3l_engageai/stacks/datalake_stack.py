@@ -69,12 +69,29 @@ class DatalakeStack(Stack):
         crawler = create_glue_crawler(self, branch, cast(aws_iam.IRole, self.glue_crawler_role), glue_db, self.s3_data_bucket)
 
         # step4: grant permission to role
-        grant_database_permissions_to_execution_role(scope=self, name=f"crawler2", branch=branch, database=glue_db, role=cast(aws_iam.Role, self.glue_crawler_role))
+        # grant_database_permissions_to_execution_role(scope=self, name=f"crawler2", branch=branch, database=glue_db, role=cast(aws_iam.Role, self.glue_crawler_role))
         # grant_database_permissions_to_execution_role(scope=self, name=f"admin-for-all", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin_for_all_accounts))
         # grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
 
-        grant_table_permissions_to_execution_role(self, f"glue-crawler", branch, glue_db, cast(aws_iam.Role, self.glue_crawler_role))
+        # grant_table_permissions_to_execution_role(self, f"glue-crawler", branch, glue_db, cast(aws_iam.Role, self.glue_crawler_role))
         # grant_table_permissions_to_execution_role(self, f"admin-for-all", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
         # grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
         
-        
+    # def assume_role_to_sso_role(self, role: aws_iam.IRole, sso_role_name: str):
+    #         # Create IAM role that can be assumed by CFN/CDK and SSO users
+    #     cdk_lf_role = aws_iam.Role(
+    #         self,
+    #         "CDKGlueLFRole",
+    #         assumed_by=cast(aws_iam.IPrincipal, aws_iam.CompositePrincipal(
+    #             # CloudFormation / CDK can assume this role
+    #             cast(aws_iam.IPrincipal, aws_iam.ServicePrincipal("cloudformation.amazonaws.com")),
+    #             # SSO users can assume this role via SAML
+    #             cast(aws_iam.IPrincipal, aws_iam.FederatedPrincipal(
+    #                 f"arn:aws:iam::184898280326:saml-provider/AWSReservedSSO",
+    #                 conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}}
+    #             )))
+    #         ),
+    #         managed_policies=[
+    #             aws_iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess")
+    #         ]
+    #     )
