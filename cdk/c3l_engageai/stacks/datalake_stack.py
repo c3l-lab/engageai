@@ -2,7 +2,8 @@ from aws_cdk import (
     Stack,
     aws_iam,
     aws_kms,
-    aws_s3
+    aws_s3,
+    aws_glue_alpha
 )
 from constructs import Construct
 from aws_cdk import aws_iam
@@ -69,14 +70,32 @@ class DatalakeStack(Stack):
         crawler = create_glue_crawler(self, branch, cast(aws_iam.IRole, self.glue_crawler_role), glue_db, self.s3_data_bucket)
 
         # step4: grant permission to role
-        # grant_database_permissions_to_execution_role(scope=self, name=f"crawler2", branch=branch, database=glue_db, role=cast(aws_iam.Role, self.glue_crawler_role))
-        # grant_database_permissions_to_execution_role(scope=self, name=f"admin-for-all", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin_for_all_accounts))
-        # grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
-
-        # grant_table_permissions_to_execution_role(self, f"glue-crawler", branch, glue_db, cast(aws_iam.Role, self.glue_crawler_role))
-        # grant_table_permissions_to_execution_role(self, f"admin-for-all", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
-        # grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
+        self.grant_database_permissions(branch, glue_db, cast(aws_iam.IRole, self.glue_crawler_role))
         
+    def grant_database_permissions(self, branch: Environment, glue_db: aws_glue_alpha.Database, crawler_role: aws_iam.IRole):
+        role_admin_for_all_accounts = cast(
+            aws_iam.Role,
+            aws_iam.Role.from_role_arn(
+                self, 
+                resource_name("role-admin-for-all-accounts", branch), 
+                "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_Admin_Access_for_all_Accounts_27499b6293fca4d9"
+            )
+        )
+        role_admin = cast(
+            aws_iam.Role,
+            aws_iam.Role.from_role_arn(
+                self, 
+                resource_name("role-admin", branch), 
+                "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520"
+            )
+        )
+        grant_database_permissions_to_execution_role(scope=self, name=f"crawler", branch=branch, database=glue_db, role=cast(aws_iam.Role, crawler_role))
+        grant_table_permissions_to_execution_role(self, f"crawler", branch, glue_db, cast(aws_iam.Role, crawler_role))
+        grant_database_permissions_to_execution_role(scope=self, name=f"admin-all", branch=branch, database=glue_db, role=role_admin_for_all_accounts)
+        grant_table_permissions_to_execution_role(self, f"admin-all", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
+        grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
+        grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
+
     # def assume_role_to_sso_role(self, role: aws_iam.IRole, sso_role_name: str):
     #         # Create IAM role that can be assumed by CFN/CDK and SSO users
     #     cdk_lf_role = aws_iam.Role(
