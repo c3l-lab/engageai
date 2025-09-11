@@ -56,7 +56,7 @@ class DatalakeStack(Stack):
         )
         role_admin = cast(
             aws_iam.Role,
-            aws_iam.Role.from_role_name(self, resource_name("role-admin-for-all-accounts", branch), "AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520")
+            aws_iam.Role.from_role_name(self, resource_name("role-admin", branch), "AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520")
         )
 
         # step2: create s3 bucket
