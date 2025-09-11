@@ -54,10 +54,10 @@ class DatalakeStack(Stack):
         #     aws_iam.Role,
         #     aws_iam.Role.from_role_name(self, resource_name("role-admin-for-all-accounts", branch), "AWSReservedSSO_Admin_Access_for_all_Accounts_27499b6293fca4d9")
         # )
-        role_admin = cast(
-            aws_iam.Role,
-            aws_iam.Role.from_role_name(self, resource_name("role-admin", branch), "AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520")
-        )
+        # role_admin = cast(
+        #     aws_iam.Role,
+        #     aws_iam.Role.from_role_name(self, resource_name("role-admin", branch), "AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520")
+        # )
 
         # step2: create s3 bucket
         self.s3_data_bucket = create_data_storage_bucket(self, branch, cast(aws_kms.IKey, self.key))
@@ -71,10 +71,10 @@ class DatalakeStack(Stack):
         # step4: grant permission to role
         grant_database_permissions_to_execution_role(scope=self, name=f"crawler2", branch=branch, database=glue_db, role=cast(aws_iam.Role, self.glue_crawler_role))
         # grant_database_permissions_to_execution_role(scope=self, name=f"admin-for-all", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin_for_all_accounts))
-        grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
+        # grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
 
         grant_table_permissions_to_execution_role(self, f"glue-crawler", branch, glue_db, cast(aws_iam.Role, self.glue_crawler_role))
         # grant_table_permissions_to_execution_role(self, f"admin-for-all", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
-        grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
+        # grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
         
         
