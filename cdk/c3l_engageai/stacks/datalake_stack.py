@@ -52,11 +52,11 @@ class DatalakeStack(Stack):
         set_lakeformation_administrator(self, "admin", branch, cast(aws_iam.IRole, self.glue_crawler_role))
         role_admin_for_all_accounts = cast(
             aws_iam.Role,
-            aws_iam.Role.from_role_arn(self, f"{branch}-data-scientist", "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_Admin_Access_for_all_Accounts_27499b6293fca4d9")
+            aws_iam.Role.from_role_arn(self, resource_name("admin-for-all-accounts", branch), "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_Admin_Access_for_all_Accounts_27499b6293fca4d9")
         )
         role_admin = cast(
             aws_iam.Role,
-            aws_iam.Role.from_role_arn(self, f"{branch}-data-scientist", "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520")
+            aws_iam.Role.from_role_arn(self, resource_name("admin", branch), "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520")
         )
 
         # step2: create s3 bucket
@@ -70,11 +70,11 @@ class DatalakeStack(Stack):
 
         # step4: grant permission to role
         grant_database_permissions_to_execution_role(scope=self, name=f"crawler2", branch=branch, database=glue_db, role=cast(aws_iam.Role, self.glue_crawler_role))
-        grant_database_permissions_to_execution_role(scope=self, name=f"data-scientist", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin_for_all_accounts))
-        grant_database_permissions_to_execution_role(scope=self, name=f"data-scientist", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
+        grant_database_permissions_to_execution_role(scope=self, name=f"admin-for-all", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin_for_all_accounts))
+        grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
 
         grant_table_permissions_to_execution_role(self, f"glue-crawler", branch, glue_db, cast(aws_iam.Role, self.glue_crawler_role))
-        grant_table_permissions_to_execution_role(self, f"data-scientist", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
-        grant_table_permissions_to_execution_role(self, f"data-scientist", branch, glue_db, cast(aws_iam.Role, role_admin))
+        grant_table_permissions_to_execution_role(self, f"admin-for-all", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
+        grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
         
         
