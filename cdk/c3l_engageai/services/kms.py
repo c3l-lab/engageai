@@ -13,6 +13,7 @@ from constructs import Construct
 import json
 from c3l_engageai.helpers import resource_name
 from c3l_engageai.config import Environment
+from typing import cast
 
 # def create_datazone_kms(scope: Construct, construct_id: str, branch: Environment) -> kms.Key:
 #     # Create KMS key for encryption
@@ -24,20 +25,19 @@ from c3l_engageai.config import Environment
 #         removal_policy=RemovalPolicy.DESTROY
 #     )
 
-def create_datazone_kms(scope: Construct, construct_id: str, branch: Environment):
+def create_datalake_kms(scope: Construct, construct_id: str, branch: Environment):
     # Create KMS Key with alias
     key = kms.Key(
         scope,
         construct_id,
         description=f"KMS key for {branch}",
-        enable_key_rotation=True,
+        enable_key_rotation=True
     )
-
+    
     kms.Alias(
         scope,
-        f"{construct_id}Alias",
-        alias_name=f"alias/{construct_id}",
-        target_key=key,
+        resource_name("key", branch),
+        alias_name=resource_name("key", branch),
+        target_key=cast(kms.IKey, key),
     )
-
     return key
