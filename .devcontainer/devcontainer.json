@@ -35,7 +35,7 @@
     // "type=volume,source=mas-home,target=/home/${localEnv:USER}",
 
     // Mount your AWS config safely via the new shared folder
-    "type=bind,source=/Users/${localEnv:USER}/.aws,target=/home/${localEnv:USER}/.aws"
+    "type=bind,source=/Home/${localEnv:USER}/.aws,target=/home/${localEnv:USER}/.aws"
 	],
 
 
