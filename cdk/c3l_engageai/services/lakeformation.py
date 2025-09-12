@@ -87,15 +87,15 @@ def grant_table_permissions_to_execution_role(
     permission = aws_lakeformation.CfnPrincipalPermissions(
         scope=scope,
         id=resource_name(f"{name}-tbl-permission", branch),
-        permissions=["ALL"] , #["SELECT", "INSERT", "DELETE", "ALTER", "DROP", "DESCRIBE"],
+        permissions=["ALL", "SELECT", "INSERT", "DELETE", "ALTER", "DROP", "DESCRIBE"],
         permissions_with_grant_option=[
             "ALL"
-            # "SELECT",
-            # "INSERT",
-            # "DELETE",
-            # "ALTER",
-            # "DROP",
-            # "DESCRIBE",
+            "SELECT",
+            "INSERT",
+            "DELETE",
+            "ALTER",
+            "DROP",
+            "DESCRIBE",
         ],
         principal=aws_lakeformation.CfnPrincipalPermissions.DataLakePrincipalProperty(
             data_lake_principal_identifier=role.role_arn
