@@ -12,7 +12,7 @@ from aws_cdk import (
 from constructs import Construct
 import json
 from c3l_engageai.helpers import resource_name
-from c3l_engageai.config import Environment
+from c3l_engageai.config import Environment, config
 from typing import cast
 
 # def create_datazone_kms(scope: Construct, construct_id: str, branch: Environment) -> kms.Key:
@@ -33,7 +33,32 @@ def create_datalake_kms(scope: Construct, construct_id: str, branch: Environment
         description=f"KMS key for {branch}",
         enable_key_rotation=True
     )
-    
+    # Statement 1: Allow account root full access
+    key.add_to_resource_policy(
+        iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            principals=[cast(iam.IPrincipal, iam.ArnPrincipal(f"arn:aws:iam::{config.environment_accounts[branch].id}:root"))],
+            actions=["kms:*"],
+            resources=["*"]
+        )
+    )
+    # Statement 2: Allow LF Data Access Role specific actions
+    key.add_to_resource_policy(
+        iam.PolicyStatement(
+            sid="AllowLFDataAccessRole",
+            effect=iam.Effect.ALLOW,
+            principals=[cast(iam.IPrincipal, iam.ArnPrincipal(
+                f"arn:aws:iam::{config.environment_accounts[branch].id}:role/aws-service-role/lakeformation.amazonaws.com/AWSServiceRoleForLakeFormationDataAccess"
+            ))],
+            actions=[
+                "kms:Decrypt",
+                "kms:Encrypt",
+                "kms:GenerateDataKey*"
+            ],
+            resources=["*"]
+        )
+    )
+        
     kms.Alias(
         scope,
         resource_name("key", branch),
@@ -41,3 +66,7 @@ def create_datalake_kms(scope: Construct, construct_id: str, branch: Environment
         target_key=cast(kms.IKey, key),
     )
     return key
+
+
+
+

@@ -48,6 +48,11 @@ class DatalakeStack(Stack):
         # step1: create base resources
         self.key = create_datalake_kms(self, "datalake-key", branch)
         self.glue_crawler_role = create_glue_crawler_role(self, branch)
+
+        # 2. Grant KMS key usage (Decrypt, Encrypt, GenerateDataKey)
+        self.key.grant_encrypt_decrypt(self.glue_crawler_role)
+        self.key.grant(self.glue_crawler_role, "kms:GenerateDataKey*")
+
         setup_lakeformation_access(self, branch)
         set_datalake_formation_initial_settings(self, branch, self.glue_crawler_role)
         set_lakeformation_administrator(self, "lf-admin", branch, cast(aws_iam.IRole, self.glue_crawler_role))

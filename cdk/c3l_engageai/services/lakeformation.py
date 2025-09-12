@@ -89,7 +89,7 @@ def grant_table_permissions_to_execution_role(
         id=resource_name(f"{name}-tbl-permission", branch),
         permissions=["ALL", "SELECT", "INSERT", "DELETE", "ALTER", "DROP", "DESCRIBE"],
         permissions_with_grant_option=[
-            "ALL"
+            "ALL",
             "SELECT",
             "INSERT",
             "DELETE",
