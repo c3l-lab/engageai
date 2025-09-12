@@ -102,13 +102,13 @@ from constructs import Construct
 def create_datazone_execution_role(
     scope: Construct,
     construct_id: str,
-    branch: str
+    branch: Environment
 ) -> aws_iam.IRole:
   
     execution_role = aws_iam.Role(
         scope,
         construct_id,
-        role_name=f"datazone-execution-role-{branch}",
+        role_name=resource_name("datazone-execution-role", branch),
         assumed_by=cast(aws_iam.IPrincipal, aws_iam.ServicePrincipal("datazone.amazonaws.com")),
         managed_policies=[
             aws_iam.ManagedPolicy.from_aws_managed_policy_name(

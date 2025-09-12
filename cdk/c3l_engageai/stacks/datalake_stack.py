@@ -11,12 +11,16 @@ from aws_cdk import aws_iam
 from typing import cast
 from c3l_engageai.services.iam import (
     create_glue_crawler_role,
-    setup_lakeformation_access
+    setup_lakeformation_access,
+    create_datazone_execution_role
 )
 from c3l_engageai.config import Environment, config
 from c3l_engageai.helpers import resource_name
 from c3l_engageai.services.secretsmanager import create_secrets
-from c3l_engageai.services.kms import create_datalake_kms
+from c3l_engageai.services.kms import (
+    create_datalake_kms,
+    create_datazone_kms
+)
 from c3l_engageai.services.lakeformation import (
     set_datalake_formation_initial_settings,
     set_lakeformation_administrator,
@@ -50,8 +54,10 @@ class DatalakeStack(Stack):
         self.glue_crawler_role = create_glue_crawler_role(self, branch)
 
         # 2. Grant KMS key usage (Decrypt, Encrypt, GenerateDataKey)
-        self.key.grant_encrypt_decrypt(self.glue_crawler_role)
-        self.key.grant(self.glue_crawler_role, "kms:GenerateDataKey*")
+        self.grant_key_permission_to_role(
+            cast(aws_kms.IKey, self.key), 
+            cast(aws_iam.IRole, self.glue_crawler_role)
+        )
 
         setup_lakeformation_access(self, branch)
         set_datalake_formation_initial_settings(self, branch, self.glue_crawler_role)
@@ -68,6 +74,11 @@ class DatalakeStack(Stack):
 
         # step4: grant permission to role
         self.grant_database_permissions(branch, glue_db, cast(aws_iam.IRole, self.glue_crawler_role))
+
+    def grant_key_permission_to_role(self, key: aws_kms.IKey, role: aws_iam.IRole):
+        # Grant KMS key usage (Decrypt, Encrypt, GenerateDataKey)
+        key.grant_encrypt_decrypt(role)
+        key.grant(role, "kms:GenerateDataKey*")
 
     def grant_database_permissions(self, branch: Environment, glue_db: aws_glue_alpha.Database, crawler_role: aws_iam.IRole):
         # role_admin_for_all_accounts = cast(
@@ -93,21 +104,25 @@ class DatalakeStack(Stack):
         grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
         grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
 
-    # def assume_role_to_sso_role(self, role: aws_iam.IRole, sso_role_name: str):
-    #         # Create IAM role that can be assumed by CFN/CDK and SSO users
-    #     cdk_lf_role = aws_iam.Role(
-    #         self,
-    #         "CDKGlueLFRole",
-    #         assumed_by=cast(aws_iam.IPrincipal, aws_iam.CompositePrincipal(
-    #             # CloudFormation / CDK can assume this role
-    #             cast(aws_iam.IPrincipal, aws_iam.ServicePrincipal("cloudformation.amazonaws.com")),
-    #             # SSO users can assume this role via SAML
-    #             cast(aws_iam.IPrincipal, aws_iam.FederatedPrincipal(
-    #                 f"arn:aws:iam::184898280326:saml-provider/AWSReservedSSO",
-    #                 conditions={"StringEquals": {"SAML:aud": "https://signin.aws.amazon.com/saml"}}
-    #             )))
-    #         ),
-    #         managed_policies=[
-    #             aws_iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess")
-    #         ]
-    #     )
+    def create_datazone(self, branch: Environment):
+        # datazone_kms = create_datazone_kms(self, resource_name("datazone-kms", branch), branch)
+        datazone_kms = self.key
+        execution_role= create_datazone_execution_role (self, resource_name("datazone_execution_role", branch), branch)       
+        self.grant_key_permission_to_role(
+            cast(aws_kms.IKey, self.key), 
+            cast(aws_iam.IRole, execution_role)
+        )
+        # Call the service functions in order
+        domain_id = create_domain(self, branch,  execution_role, cast(aws_kms.IKey, datazone_kms))
+
+        blueprint_id = create_environment_blueprint(self, domain_id, execution_role)
+        # =================================================
+        # Please modify the following code according to the code above
+        
+        project_id = create_project(self, domain_id)
+        env_profile_id = create_environment_profile(
+            self, domain_id, project_id, blueprint_id, branch
+        )
+        environment_id = create_environment(
+            self, domain_id, project_id, env_profile_id, branch, execution_role
+        )
