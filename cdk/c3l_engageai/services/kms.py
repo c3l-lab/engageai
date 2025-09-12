@@ -25,8 +25,8 @@ def create_datazone_kms(scope: Construct, construct_id: str, branch: Environment
     )
     kms.Alias(
         scope,
-        resource_name("datazone_kms", branch),
-        alias_name=resource_name("key", branch),
+        resource_name("datazone-key", branch),
+        alias_name=resource_name("datazone-key", branch),
         target_key=cast(kms.IKey, key),
     )
     return key
