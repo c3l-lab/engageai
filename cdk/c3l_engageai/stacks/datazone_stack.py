@@ -27,7 +27,7 @@ class DataZoneStack(Stack):
         datazone_kms = create_datazone_kms(self, resource_name("datazone-kms", branch), branch)
         execution_role= create_datazone_execution_role (self, resource_name("datazone_execution_role", branch), branch)       
         # Call the service functions in order
-        domain_id = create_domain(self, execution_role, cast(aws_kms.IKey, datazone_kms))
+        domain_id = create_domain(self, branch,  execution_role, cast(aws_kms.IKey, datazone_kms))
 
         blueprint_id = create_environment_blueprint(self, domain_id, execution_role)
         # =================================================
