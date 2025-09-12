@@ -71,16 +71,16 @@ class DatalakeStack(Stack):
 
         # step4: grant permission to role
         self.grant_database_permissions(branch, glue_db, cast(aws_iam.IRole, self.glue_crawler_role))
-        
+
     def grant_database_permissions(self, branch: Environment, glue_db: aws_glue_alpha.Database, crawler_role: aws_iam.IRole):
-        role_admin_for_all_accounts = cast(
-            aws_iam.Role,
-            aws_iam.Role.from_role_arn(
-                self, 
-                resource_name("role-admin-for-all-accounts", branch), 
-                "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_Admin_Access_for_all_Accounts_27499b6293fca4d9"
-            )
-        )
+        # role_admin_for_all_accounts = cast(
+        #     aws_iam.Role,
+        #     aws_iam.Role.from_role_arn(
+        #         self, 
+        #         resource_name("role-admin-for-all-accounts", branch), 
+        #         "arn:aws:iam::184898280326:role/aws-reserved/sso.amazonaws.com/ap-southeast-2/AWSReservedSSO_Admin_Access_for_all_Accounts_27499b6293fca4d9"
+        #     )
+        # )
         role_admin = cast(
             aws_iam.Role,
             aws_iam.Role.from_role_arn(
@@ -91,8 +91,8 @@ class DatalakeStack(Stack):
         )
         grant_database_permissions_to_execution_role(scope=self, name=f"crawler", branch=branch, database=glue_db, role=cast(aws_iam.Role, crawler_role))
         grant_table_permissions_to_execution_role(self, f"crawler", branch, glue_db, cast(aws_iam.Role, crawler_role))
-        grant_database_permissions_to_execution_role(scope=self, name=f"admin-all", branch=branch, database=glue_db, role=role_admin_for_all_accounts)
-        grant_table_permissions_to_execution_role(self, f"admin-all", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
+        # grant_database_permissions_to_execution_role(scope=self, name=f"admin-all", branch=branch, database=glue_db, role=role_admin_for_all_accounts)
+        # grant_table_permissions_to_execution_role(self, f"admin-all", branch, glue_db, cast(aws_iam.Role, role_admin_for_all_accounts))
         grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
         grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
 
