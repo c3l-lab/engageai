@@ -34,14 +34,14 @@ class DeployStage(aws_cdk.Stage):
             env=env,
         )
         
-        construct_id = resource_name("datazone", branch)
-        datazone_stack= DataZoneStack(
-            self,
-            construct_id=construct_id,
-            branch=branch,
-            env=env
-        )
-        datazone_stack.add_dependency(secrets_stack)
+        # construct_id = resource_name("datazone", branch)
+        # datazone_stack= DataZoneStack(
+        #     self,
+        #     construct_id=construct_id,
+        #     branch=branch,
+        #     env=env
+        # )
+        # datazone_stack.add_dependency(secrets_stack)
 
         construct_id = resource_name("datalake", branch)
         datalake_stack= DatalakeStack(
