@@ -56,15 +56,7 @@ class DatalakeStack(Stack):
         setup_lakeformation_access(self, branch)
         set_datalake_formation_initial_settings(self, branch, self.glue_crawler_role)
         set_lakeformation_administrator(self, "lf-admin", branch, cast(aws_iam.IRole, self.glue_crawler_role))
-        # role_admin_for_all_accounts = cast(
-        #     aws_iam.Role,
-        #     aws_iam.Role.from_role_name(self, resource_name("role-admin-for-all-accounts", branch), "AWSReservedSSO_Admin_Access_for_all_Accounts_27499b6293fca4d9")
-        # )
-        # role_admin = cast(
-        #     aws_iam.Role,
-        #     aws_iam.Role.from_role_name(self, resource_name("role-admin", branch), "AWSReservedSSO_AWSAdministratorAccess_e0be9866f0d62520")
-        # )
-
+        
         # step2: create s3 bucket
         self.s3_data_bucket = create_data_storage_bucket(self, branch, cast(aws_kms.IKey, self.key))
         lake_formation_location = set_data_lake_location(self, branch, self.s3_data_bucket)
