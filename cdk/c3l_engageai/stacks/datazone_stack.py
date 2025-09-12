@@ -24,7 +24,7 @@ class DataZoneStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, branch: Environment, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
-        datazone_kms = create_datazone_kms(self, resource_name("datazone_kms", branch), branch)
+        datazone_kms = create_datazone_kms(self, resource_name("datazone-kms", branch), branch)
         execution_role= create_datazone_execution_role (self, resource_name("datazone_execution_role", branch), branch)       
         # Call the service functions in order
         domain_id = create_domain(self, execution_role, cast(aws_kms.IKey, datazone_kms))
