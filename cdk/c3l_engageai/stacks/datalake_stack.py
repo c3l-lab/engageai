@@ -104,6 +104,8 @@ class DatalakeStack(Stack):
         grant_database_permissions_to_execution_role(scope=self, name=f"admin", branch=branch, database=glue_db, role=cast(aws_iam.Role, role_admin))
         grant_table_permissions_to_execution_role(self, f"admin", branch, glue_db, cast(aws_iam.Role, role_admin))
 
+        self.create_datazone(branch)
+
     def create_datazone(self, branch: Environment):
         # datazone_kms = create_datazone_kms(self, resource_name("datazone-kms", branch), branch)
         datazone_kms = self.key
