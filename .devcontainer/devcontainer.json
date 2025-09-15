@@ -21,25 +21,11 @@
 	],
 
 	"workspaceFolder": "${localWorkspaceFolder}",
-	// "mounts": [
-	// 	"type=bind,source=${localWorkspaceFolder},target=${localWorkspaceFolder}",
-	// 	"type=volume,source=mas-home,target=/home/${localEnv:USER:developer}",
-	// 	"type=bind,source=/home/${localEnv:USER:developer}/.aws/,target=/home/${localEnv:USER:developer}/.aws/"
-	// ],
-
 	"mounts": [
-    // Mount your workspace folder as-is
-    "type=bind,source=${localWorkspaceFolder},target=${localWorkspaceFolder}",
-
-    // Mount a volume for your container’s home directory (optional)
-    // "type=volume,source=mas-home,target=/home/${localEnv:USER}",
-
-    // Mount your AWS config safely via the new shared folder
-    "type=bind,source=/Users/${localEnv:USER}/.aws,target=/home/${localEnv:USER}/.aws"
+		"type=bind,source=${localWorkspaceFolder},target=${localWorkspaceFolder}",
+		// "type=volume,source=mas-home,target=/home/${localEnv:USER:developer}",
+		"type=bind,source=${localEnv:HOME}/.aws,target=/home/${localEnv:USER:developer}/.aws/"
 	],
-
-
-
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {
 			"username": "${localEnv:USER:developer}",
@@ -69,11 +55,12 @@
 		}	
 	},
 	"postCreateCommand": {
-		// "install-dependencies": "cd ${localWorkspaceFolder}; make install -j 1"
+		//"install-dependencies": "cd ${localWorkspaceFolder}; make install -j 1"
+		"set-aws-config-path": "if [ -d \"/Users/${USER}/.aws\" ]; then echo 'export AWS_CONFIG_PATH=/Users/${USER}/.aws' >> /home/${USER}/.zshrc; else echo 'export AWS_CONFIG_PATH=/home/${USER}/.aws' >> /home/${USER}/.zshrc; fi"
 	},
 	"postStartCommand": {
 		"setup-zsh": ["sed",  "-i", "-e", "s/ZSH_THEME=.*/ZSH_THEME='bira'/g", "/home/${localEnv:USER:developer}/.zshrc"]
-	},
+	}
 	// "postAttachCommand": {
 	// 	"fix-permissions": "chmod +0070 -R /home/${localEnv:USER:developer}"
 	// }

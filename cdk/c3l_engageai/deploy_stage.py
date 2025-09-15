@@ -7,7 +7,8 @@ from c3l_engageai.config import Environment, config
 from c3l_engageai.helpers import resource_name
 
 from c3l_engageai.stacks.secrets import Secrets
-from c3l_engageai.stacks.datazone_cdk_stack import DataZoneFullStack
+from c3l_engageai.stacks.datazone_stack import DataZoneStack
+from c3l_engageai.stacks.datalake_stack import DatalakeStack
 
 class DeployStage(aws_cdk.Stage):
     def __init__(
@@ -32,14 +33,24 @@ class DeployStage(aws_cdk.Stage):
             stack_name=secrets_stack_name,
             env=env,
         )
+        
+        # construct_id = resource_name("datazone", branch)
+        # datazone_stack= DataZoneStack(
+        #     self,
+        #     construct_id=construct_id,
+        #     branch=branch,
+        #     env=env
+        # )
+        # datazone_stack.add_dependency(secrets_stack)
 
-        # construct_id = resource_name("datazone-full-stack", branch)
-        construct_id = resource_name("engageai-submission-full-stack", branch)
-        datazonefullstack= DataZoneFullStack(
+        construct_id = resource_name("datalake", branch)
+        datalake_stack= DatalakeStack(
             self,
             construct_id=construct_id,
             branch=branch,
             env=env
         )
-        datazonefullstack.add_dependency(secrets_stack)
+        datalake_stack.add_dependency(secrets_stack)
+
+        
 

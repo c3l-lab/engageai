@@ -1,4 +1,7 @@
-from aws_cdk import Stack
+from aws_cdk import (
+    aws_kms,
+    Stack
+)
 from constructs import Construct
 from aws_cdk import aws_iam as iam
 
@@ -15,19 +18,18 @@ from c3l_engageai.services.datazone import (
     create_environment,
     create_glue_data_source
 )
+from typing import cast
 
-
-class DataZoneFullStack(Stack):
+class DataZoneStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, branch: Environment, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
 
-        datazone_kms = create_datazone_kms(self, resource_name("datazone_kms", branch), branch)
+        datazone_kms = create_datazone_kms(self, resource_name("datazone-kms", branch), branch)
         execution_role= create_datazone_execution_role (self, resource_name("datazone_execution_role", branch), branch)       
         # Call the service functions in order
-        domain_id = create_domain(self, execution_role, datazone_kms)
+        domain_id = create_domain(self, branch,  execution_role, cast(aws_kms.IKey, datazone_kms))
 
         blueprint_id = create_environment_blueprint(self, domain_id, execution_role)
-
         # =================================================
         # Please modify the following code according to the code above
         
@@ -35,7 +37,6 @@ class DataZoneFullStack(Stack):
         env_profile_id = create_environment_profile(
             self, domain_id, project_id, blueprint_id, branch
         )
-
         environment_id = create_environment(
             self, domain_id, project_id, env_profile_id, branch, execution_role
         )
@@ -43,9 +44,8 @@ class DataZoneFullStack(Stack):
         # s3_data_source_id = create_s3_data_source(
         #     self, domain_id, environment_id, project_id
         # )
-
-        glue_data_source_id = create_glue_data_source(
-            self, execution_role, domain_id, environment_id, project_id
-        )
+        # glue_data_source_id = create_glue_data_source(
+        #     self, execution_role, domain_id, environment_id, project_id
+        # )
 
         

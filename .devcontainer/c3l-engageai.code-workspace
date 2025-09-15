@@ -7,18 +7,6 @@
 		{
 			"name": "cdk",
 			"path": "../cdk"
-		},
-		{
-			"name": "datapipeline_scheduler",
-			"path": "../modules/datapipeline_scheduler"
-		},
-		{
-			"name": "mas_shared",
-			"path": "../modules/mas_shared"
-		},
-		{
-			"name": "neptune_query_handler",
-			"path": "../modules/neptune_query_handler"
 		}
 	],
 	"settings": {}

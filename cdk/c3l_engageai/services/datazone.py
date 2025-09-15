@@ -7,16 +7,19 @@ from aws_cdk import (
 )
 from constructs import Construct
 from c3l_engageai.config import Environment, config
+from c3l_engageai.helpers import resource_name
 from typing import Tuple
 
 
 def create_domain(
         scope: Construct, 
+        branch: Environment,
         execution_role: iam.IRole, 
-        kms_key: aws_kms.IKey) -> str: 
+        kms_key: aws_kms.IKey,
+        ) -> str: 
     domain = datazone.CfnDomain(
-        scope, "EngageAiDataZoneDomain",
-        name="engageai-datazone-domain",
+        scope, resource_name("DataZone-Domain", branch),
+        name=resource_name("datazone-domain", branch),
         description="EngageAI data zone domain",
         domain_execution_role=execution_role.role_arn,
         kms_key_identifier=kms_key.key_arn
@@ -74,8 +77,6 @@ def create_environment_profile(
         aws_account_region= config.environment_accounts[branch].region
     )
     return profile.attr_id
-
-
 
 def create_environment(
     scope: Construct,

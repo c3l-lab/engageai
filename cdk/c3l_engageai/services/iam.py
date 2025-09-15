@@ -7,6 +7,8 @@ from constructs import Construct
 
 from c3l_engageai.config import Environment
 from c3l_engageai.helpers import resource_name
+from typing import cast
+
 
 def create_lambda_default_execution_role(
     scope: Construct, branch: Environment, stack_name: str
@@ -100,14 +102,14 @@ from constructs import Construct
 def create_datazone_execution_role(
     scope: Construct,
     construct_id: str,
-    branch: str
+    branch: Environment
 ) -> aws_iam.IRole:
   
     execution_role = aws_iam.Role(
         scope,
         construct_id,
-        role_name=f"datazone-execution-role-{branch}",
-        assumed_by=aws_iam.ServicePrincipal("datazone.amazonaws.com"),
+        role_name=resource_name("datazone-execution-role", branch),
+        assumed_by=cast(aws_iam.IPrincipal, aws_iam.ServicePrincipal("datazone.amazonaws.com")),
         managed_policies=[
             aws_iam.ManagedPolicy.from_aws_managed_policy_name(
                 "AmazonS3FullAccess"
@@ -164,4 +166,67 @@ def create_datazone_execution_role(
         )
     )
 
-    return execution_role
+    return cast(aws_iam.IRole, execution_role)
+
+def create_glue_crawler_role(scope: Construct, branch: Environment) -> aws_iam.Role:
+    crawler_role = aws_iam.Role(
+        scope, "GlueCrawlerRole",
+        assumed_by=cast(aws_iam.IPrincipal, aws_iam.ServicePrincipal("glue.amazonaws.com")),
+        role_name=resource_name("glue-crawler", branch),
+        managed_policies=[
+            aws_iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSGlueServiceRole")
+        ]
+    )
+
+    crawler_role.add_to_policy(
+        aws_iam.PolicyStatement(
+            effect=aws_iam.Effect.ALLOW,
+            actions=[
+                "lambda:InvokeFunction",
+                "lambda:InvokeFunctionUrl",
+                "logs:*",
+                "secretsmanager:*",
+                "states:*",
+                "ecr:*",
+                "s3:*",
+                "iam:*",
+                "ses:*",
+                "athena:*",
+                "glue:*",
+                "lakeformation:*",
+                "kms:*",
+                "sts:*"
+            ],
+            resources=["*"],
+        )
+    )
+    return crawler_role
+
+def setup_lakeformation_access(scope: Construct, branch: Environment):
+    # Create a new role that grants the permissions we need
+    kms_access_role = aws_iam.Role(
+        scope,
+        "LakeFormationKMSRole",
+        role_name=resource_name(f"LakeFormationKMSAccess",branch),
+        description=f"Role for Lake Formation KMS access ({branch})",
+        # Allow the SSO role to assume this role
+        assumed_by=cast(
+            aws_iam.IPrincipal, 
+            aws_iam.ArnPrincipal("arn:aws:iam::184898280326:role/aws-service-role/lakeformation.amazonaws.com/AWSServiceRoleForLakeFormationDataAccess")
+        )
+    )
+    # Add the KMS permissions to this new role
+    kms_access_role.add_to_policy(
+        aws_iam.PolicyStatement(
+            sid="KMSAccess",
+            effect=aws_iam.Effect.ALLOW,
+            actions=[
+                "kms:Decrypt",
+                "kms:DescribeKey",
+                "kms:Encrypt",
+                "kms:GenerateDataKey*",
+                "kms:ReEncrypt*"
+            ],
+            resources=["*"],
+        )
+    )
