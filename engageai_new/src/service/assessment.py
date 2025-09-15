@@ -429,7 +429,7 @@ class AssessmentService:
         df_log = convert_to_datetime(
             column_name="time",
             df=df_log,
-            unit="s",
+            # ,unit="s",
             tz="Australia/Adelaide"
         )
 

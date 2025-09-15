@@ -38,14 +38,39 @@ def read_csv_s3(bucket: str, key: str) -> pd.DataFrame:
 #     return target_df
 
 
-def convert_to_datetime(column_name: str, df: pd.DataFrame = None, fmt: str = "%d/%m/%Y %H:%M", tz: str = None) -> pd.DataFrame:
+# def convert_to_datetime(column_name: str, df: pd.DataFrame = None, fmt: str = "%d/%m/%Y %H:%M", tz: str = None) -> pd.DataFrame:
+#     target_df = df if df is not None else self.merged_df
+#     if target_df is None or target_df.empty:
+#         return pd.DataFrame()  # return empty DF if no data
+#     if column_name not in target_df.columns:
+#         raise ValueError(f"Column '{column_name}' not found in DataFrame.")
+
+#     # Parse with string format
+#     target_df[column_name] = pd.to_datetime(
+#         target_df[column_name],
+#         format=fmt,
+#         errors="coerce",
+#         utc=True
+#     )
+
+#     # Convert timezone if provided
+#     if tz:
+#         target_df[column_name] = target_df[column_name].dt.tz_convert(tz)
+
+#     return target_df
+
+
+def convert_to_datetime(column_name: str, df: pd.DataFrame = None, fmt: str = "%d/%m/%Y %H:%M:%S", tz: str = None) -> pd.DataFrame:
     target_df = df if df is not None else self.merged_df
     if target_df is None or target_df.empty:
         return pd.DataFrame()  # return empty DF if no data
     if column_name not in target_df.columns:
         raise ValueError(f"Column '{column_name}' not found in DataFrame.")
 
-    # Parse with string format
+    # 🔧 Strip extra spaces first
+    target_df[column_name] = target_df[column_name].astype(str).str.replace(r"\s+", " ", regex=True).str.strip()
+
+    # Parse with correct format including seconds
     target_df[column_name] = pd.to_datetime(
         target_df[column_name],
         format=fmt,
@@ -93,9 +118,51 @@ def write_html(html_sections: list, start: str, end: str) -> str:
     return html_template
 
 
-def save_html_s3(html_content: str, start: str, end: str, bucket: str = "engage-ai-dataset", prefix: str = "output_html/"):
-    """Upload HTML content directly to S3."""
+# def save_html_s3(html_content: str, start: str, end: str, bucket: str = "engage-ai-dataset", prefix: str = "output_html/"):
+#     """Upload HTML content directly to S3."""
+#     load_dotenv()
+#     aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
+#     aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+#     aws_session_token = os.getenv("AWS_SESSION_TOKEN")  # optional
+
+#     session = boto3.Session(
+#         aws_access_key_id=aws_access_key_id,
+#         aws_secret_access_key=aws_secret_access_key,
+#         aws_session_token=aws_session_token
+#     )
+
+#     s3_client = session.client("s3", region_name="ap-southeast-2")
+
+#     file_name = f"weekly_report_{start.replace('/','')}_{end.replace('/','')}.html"
+#     s3_key = f"{prefix}{file_name}"
+
+#     s3_client.put_object(
+#         Bucket=bucket,
+#         Key=s3_key,
+#         Body=html_content,
+#         ContentType="text/html"
+#     )
+
+#     print(f"✅ HTML report uploaded to s3://{bucket}/{s3_key}")
+
+
+
+import os
+import boto3
+from dotenv import load_dotenv
+
+def save_html_s3(
+    html_content: str,
+    start: str,
+    end: str,
+    session_name: str,
+    bucket: str = "engage-ai-dataset",
+    prefix: str = "output_html/"
+):
+    """Upload HTML content directly to S3 with session name included in the filename."""
+    
     load_dotenv()
+    
     aws_access_key_id = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
     aws_session_token = os.getenv("AWS_SESSION_TOKEN")  # optional
@@ -108,9 +175,14 @@ def save_html_s3(html_content: str, start: str, end: str, bucket: str = "engage-
 
     s3_client = session.client("s3", region_name="ap-southeast-2")
 
-    file_name = f"weekly_report_{start.replace('/','')}_{end.replace('/','')}.html"
+    # Clean session_name to avoid invalid S3 characters
+    safe_session_name = session_name.replace(" ", "_")
+
+    # Construct file name
+    file_name = f"weekly_report_{safe_session_name}_{start.replace('/', '')}_{end.replace('/', '')}.html"
     s3_key = f"{prefix}{file_name}"
 
+    # Upload to S3
     s3_client.put_object(
         Bucket=bucket,
         Key=s3_key,
@@ -119,8 +191,6 @@ def save_html_s3(html_content: str, start: str, end: str, bucket: str = "engage-
     )
 
     print(f"✅ HTML report uploaded to s3://{bucket}/{s3_key}")
-
-
 
 
 

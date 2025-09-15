@@ -11,6 +11,7 @@ from src.service.assessment import AssessmentService
 
 ######## Config ########
 bucket = "engage-ai-raw-dataset"
+session_name = 'assessment_report'
 start = "14/07/2025"
 end = "21/07/2025"
 file_duedate_name = "engageai_weekly_assessment/term_assign_duedate.csv"
@@ -27,6 +28,7 @@ service = AssessmentService(df_duedate, df_log)
 df_duedate = service.get_latest_due_date(df=df_duedate)
 df_duedate = df_duedate.sort_values(['duedate', 'cmid']).reset_index(drop=True)
 
+print(df_log)
 df_log = service.log_to_action_time(df_log)
 week_log = service.filter_actions_by_period(df_log, col_name="time", start=start, end=end)
 df_sub_log = service.get_action_submit(week_log, start=start, end=end)
@@ -70,4 +72,4 @@ else:
 html_content = write_html(html_sections, start=start, end=end)
 
 ######## Upload to S3 ########
-save_html_s3(html_content, start=start, end=end)
+save_html_s3(html_content, start=start, end=end, session_name= session_name)
