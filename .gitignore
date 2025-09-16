@@ -6,10 +6,7 @@ __pycache__/
 
 
 # Jupyter Notebook checkpoints
-# .gitignore
-notebooks/__pycache__/
-notebooks/.ipynb_checkpoints/
-
+.ipynb_checkpoints/
 
 # Environment variables & secrets (if any)
 .env

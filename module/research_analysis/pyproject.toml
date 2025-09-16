@@ -12,16 +12,8 @@ matplotlib = "^3.10.3"
 awswrangler = "^3.12.1"
 boto3 = "^1.39.3"
 ipykernel = "^6.29.5"
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-selenium = "^4.34.2"
-=======
 numpy = "1.26.4"
 scipy = "1.13.0"
-seaborn = "^0.13.2"
->>>>>>> github/master
->>>>>>> aws
 
 
 [build-system]

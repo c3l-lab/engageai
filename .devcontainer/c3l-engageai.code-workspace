@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "c3l-engageai-project",
+			"path": ".."
+		},
+		{
+			"name": "cdk",
+			"path": "../cdk"
+		}
+	],
+	"settings": {}
+}

@@ -53,6 +53,8 @@ df_submissions = get_assignment_submissions(MOODLE_URL, TOKEN, ASSIGNMENT_ID)
 
 # Print the resulting DataFrame
 print(df_submissions)
+<<<<<<< HEAD
+=======
 
 
 # import requests
@@ -104,3 +106,4 @@ print(df_submissions)
 
 # for s in submissions:
 #     print(f"User ID: {s['userid']} | Status: {s['status']} | Created: {format_time(s['timecreated'])} | Modified: {format_time(s['timemodified'])}")
+>>>>>>> aws

@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "engageai-new"
+version = "0.1.0"
+description = ""
+authors = ["paggie"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.13"
+pydantic = "^2.11.7"
+pandas = "^2.3.2"
+boto3 = "^1.40.21"
+dotenv = "^0.9.9"
+weasyprint = "^66.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
