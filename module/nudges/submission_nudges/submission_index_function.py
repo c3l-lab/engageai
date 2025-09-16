@@ -8,10 +8,18 @@ sys.path.append(os.path.dirname(os.path.split(curr_dir)[0]))
 sys.path.append(os.path.dirname(curr_dir))
 
 # Import functions
+<<<<<<< HEAD
 from moodle_shared.function_name.get_course_assign import get_moodle_assignments
 from moodle_shared.function_name.check_enrol_students import get_enrolled_users
 from moodle_shared.function_name.get_assign_submission import get_assignment_submissions
 from moodle_shared.function_name.sent_message import send_message_to_user
+=======
+# from moodle_shared.function_name.get_course_assign import get_moodlsle_assignments
+from moodle_shared.function_name.check_enrol_students import get_enrolled_users
+from moodle_shared.function_name.get_assign_submission import get_assignment_submissions
+from moodle_shared.function_name.sent_message import send_message_to_user
+from moodle_shared.function_name.get_course_assign import get_moodle_assignments
+>>>>>>> aws
 from nudges.submission_nudges.submission_function import *
 from threshold.all_threshold import return_userid_sub_threshold
 
@@ -50,6 +58,7 @@ def generate_submission_index_trigger_users(token, course_id, moodle_url, assign
     return tigger_sub_userid, course_id, assignment_id
 
 
+<<<<<<< HEAD
 ################## submission reminder whole preocess  ########################################################
 
 
@@ -68,6 +77,26 @@ def generate_submission_index_trigger_users(token, course_id, moodle_url, assign
 
 
 #     return assignments
+=======
+################# submission reminder whole preocess  ########################################################
+
+
+def submission_reminder_time(token, course_id, moodle_url,days_before_due=14):
+
+
+
+    assignments = get_moodle_assignments(course_id, token)
+    pre_duedate_assign=process_duedate_reminder(assignments, days_before_due=14)
+    print(pre_duedate_assign)
+
+    enrolled_users = get_enrolled_users(moodle_url,token, course_id)
+
+    for user in enrolled_users:
+        print(f"ID: {user['id']}, Name: {user['fullname']}, Email: {user.get('email', 'N/A')}")
+
+
+    return assignments
+>>>>>>> aws
 
 def submission_reminder_time(token, course_id, moodle_url, days_before_due=14):
     today_str = datetime.today().strftime('%Y-%m-%d')
